@@ -11,6 +11,7 @@ export const Dashboard: React.FC = () => {
     const [difficulty, setDifficulty] = useState('');
     const [topic, setTopic] = useState('');
     const [language, setLanguage] = useState('');
+    const [timeAvailable, setTimeAvailable] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -33,6 +34,7 @@ export const Dashboard: React.FC = () => {
                     difficulty,
                     topic,
                     language,
+                    timeAvailableMinutes: timeAvailable ? Number(timeAvailable) : undefined,
                 }),
             });
 
@@ -53,8 +55,17 @@ export const Dashboard: React.FC = () => {
             }
 
             const requestId = data?.matchRequest?.id as string | undefined;
+            const timeAvailableMinutes = data?.matchRequest?.timeAvailableMinutes as number | undefined;
 
-            navigate('/matching', { state: { difficulty, topic, language, requestId } });
+            navigate('/matching', {
+                state: {
+                    difficulty,
+                    topic,
+                    language,
+                    requestId,
+                    timeAvailableMinutes,
+                },
+            });
         } catch (err) {
             console.error('Failed to reach matching service:', err);
             setErrorMessage('Unable to reach matching service. Please try again.');
@@ -88,6 +99,13 @@ export const Dashboard: React.FC = () => {
         { value: 'java', label: 'Java' },
         { value: 'python', label: 'Python' },
         { value: 'cpp', label: 'C++' },
+    ];
+
+    const timeOptions = [
+        { value: '', label: 'Optional: Time Available' },
+        { value: '30', label: '30 minutes' },
+        { value: '45', label: '45 minutes' },
+        { value: '60', label: '60 minutes' },
     ];
 
     return (
@@ -148,6 +166,15 @@ export const Dashboard: React.FC = () => {
                                 options={languageOptions}
                                 value={language}
                                 onChange={(e) => setLanguage(e.target.value)}
+                            />
+                        </div>
+
+                        <div className="form-group mt-6">
+                            <Select
+                                label="Time Available (optional)"
+                                options={timeOptions}
+                                value={timeAvailable}
+                                onChange={(e) => setTimeAvailable(e.target.value)}
                             />
                         </div>
 

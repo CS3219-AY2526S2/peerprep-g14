@@ -10,6 +10,7 @@ interface LocationState {
     topic?: string;
     language?: string;
     requestId?: string;
+    timeAvailableMinutes?: number;
 }
 
 export const Matching: React.FC = () => {
@@ -79,6 +80,12 @@ export const Matching: React.FC = () => {
                             <span className="detail-label">Language:</span>
                             <span className="detail-value tag">{state?.language || 'Any'}</span>
                         </div>
+                        {state?.timeAvailableMinutes && (
+                            <div className="detail-item mt-2">
+                                <span className="detail-label">Time Available:</span>
+                                <span className="detail-value tag">{state.timeAvailableMinutes} minutes</span>
+                            </div>
+                        )}
                     </div>
 
                     <div className="matching-timer mt-8">

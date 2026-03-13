@@ -18,17 +18,21 @@ export const ALLOWED_LANGUAGES = [
   'cpp',
 ] as const;
 
+export const ALLOWED_TIME_AVAILABLE_MINUTES = [30, 45, 60] as const;
+
 export type Difficulty = (typeof ALLOWED_DIFFICULTIES)[number];
 export type Topic = (typeof ALLOWED_TOPICS)[number];
 export type Language = (typeof ALLOWED_LANGUAGES)[number];
+export type TimeAvailableMinutes = (typeof ALLOWED_TIME_AVAILABLE_MINUTES)[number];
 
 export interface MatchRequestPayload {
   topic: Topic;
   difficulty: Difficulty;
   language: Language;
+  timeAvailableMinutes?: TimeAvailableMinutes | undefined;
 }
 
-export type MatchField = 'topic' | 'difficulty' | 'language';
+export type MatchField = 'topic' | 'difficulty' | 'language' | 'timeAvailableMinutes';
 
 export interface ValidationErrorDetail {
   field: MatchField;
@@ -51,6 +55,7 @@ export function validateMatchRequestPayload(body: unknown): ValidationResult {
   const rawTopic = asRecord.topic;
   const rawDifficulty = asRecord.difficulty;
   const rawLanguage = asRecord.language;
+  const rawTimeAvailable = asRecord.timeAvailableMinutes ?? asRecord.timeAvailable;
 
   if (rawTopic === undefined || rawTopic === null || rawTopic === '') {
     errors.push({
@@ -117,6 +122,27 @@ export function validateMatchRequestPayload(body: unknown): ValidationResult {
     });
   }
 
+  // Optional preference: time available in minutes
+  let timeAvailableMinutes: TimeAvailableMinutes | undefined;
+  if (rawTimeAvailable !== undefined && rawTimeAvailable !== null && rawTimeAvailable !== '') {
+    if (Array.isArray(rawTimeAvailable)) {
+      errors.push({
+        field: 'timeAvailableMinutes',
+        message: 'At most one time selection is allowed.',
+      });
+    } else {
+      const parsed = Number(rawTimeAvailable);
+      if (!Number.isFinite(parsed) || !ALLOWED_TIME_AVAILABLE_MINUTES.includes(parsed as TimeAvailableMinutes)) {
+        errors.push({
+          field: 'timeAvailableMinutes',
+          message: `Time available must be one of: ${ALLOWED_TIME_AVAILABLE_MINUTES.join(', ')} minutes.`,
+        });
+      } else {
+        timeAvailableMinutes = parsed as TimeAvailableMinutes;
+      }
+    }
+  }
+
   if (errors.length > 0) {
     return { errors };
   }
@@ -126,6 +152,7 @@ export function validateMatchRequestPayload(body: unknown): ValidationResult {
       topic: topic as Topic,
       difficulty: difficulty as Difficulty,
       language: language as Language,
+      timeAvailableMinutes,
     },
   };
 }
