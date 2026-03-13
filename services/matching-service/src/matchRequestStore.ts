@@ -12,6 +12,48 @@ export interface StoredMatchRequest extends MatchRequestPayload {
 
 const inMemoryMatchRequests: StoredMatchRequest[] = [];
 
+function compareUserIds(a: string | null, b: string | null): number {
+  if (a === b) {
+    return 0;
+  }
+
+  if (a === null) {
+    return 1;
+  }
+
+  if (b === null) {
+    return -1;
+  }
+
+  if (a < b) {
+    return -1;
+  }
+
+  if (a > b) {
+    return 1;
+  }
+
+  return 0;
+}
+
+function compareStoredMatchRequests(a: StoredMatchRequest, b: StoredMatchRequest): number {
+  const createdDiff = a.createdAt.getTime() - b.createdAt.getTime();
+  if (createdDiff !== 0) {
+    return createdDiff;
+  }
+
+  const userIdDiff = compareUserIds(a.userId, b.userId);
+  if (userIdDiff !== 0) {
+    return userIdDiff;
+  }
+
+  if (a.id === b.id) {
+    return 0;
+  }
+
+  return a.id < b.id ? -1 : 1;
+}
+
 export function findActiveRequestByUserId(
   userId: string | null,
 ): StoredMatchRequest | undefined {
@@ -89,5 +131,53 @@ export function recordMatchRequest(
 
 export function getPendingMatchRequests(): StoredMatchRequest[] {
   return inMemoryMatchRequests.filter((req) => req.status === 'PENDING');
+}
+
+export function selectNextMatchPair():
+  | { requester: StoredMatchRequest; partner: StoredMatchRequest }
+  | null {
+  const pending = getPendingMatchRequests();
+
+  if (pending.length < 2) {
+    return null;
+  }
+
+  const sortedPending = [...pending].sort(compareStoredMatchRequests);
+
+  for (const requester of sortedPending) {
+    const pool = getActivePool(requester.topic, requester.language);
+
+    const candidates = pool
+      .filter(
+        (candidate) =>
+          candidate.id !== requester.id &&
+          candidate.difficulty === requester.difficulty,
+      )
+      .sort(compareStoredMatchRequests);
+
+    const partner = candidates[0];
+
+    if (partner) {
+      return { requester, partner };
+    }
+  }
+
+  return null;
+}
+
+export function markMatchRequestsMatched(
+  requestIds: [string, string],
+): StoredMatchRequest[] {
+  const [firstId, secondId] = requestIds;
+  const matched: StoredMatchRequest[] = [];
+
+  for (const req of inMemoryMatchRequests) {
+    if (req.id === firstId || req.id === secondId) {
+      req.status = 'MATCHED';
+      matched.push(req);
+    }
+  }
+
+  return matched;
 }
 

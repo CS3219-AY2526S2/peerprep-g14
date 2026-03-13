@@ -9,6 +9,8 @@ import {
   findActiveRequestByUserId,
   getMatchRequestById,
   recordMatchRequest,
+  markMatchRequestsMatched,
+  selectNextMatchPair,
 } from './matchRequestStore.js';
 
 dotenv.config();
@@ -118,6 +120,36 @@ app.delete('/matching/requests/:id', (req: Request, res: Response) => {
   return res.status(200).json({
     message: 'Match request cancelled.',
     matchRequest: result.request,
+  });
+});
+
+app.post('/matching/attempt', (_req: Request, res: Response) => {
+  const pair = selectNextMatchPair();
+
+  if (!pair) {
+    return res.status(200).json({
+      message: 'No eligible match found.',
+      match: null,
+    });
+  }
+
+  const { requester, partner } = pair;
+
+  markMatchRequestsMatched([requester.id, partner.id]);
+
+  return res.status(200).json({
+    message: 'Match formed.',
+    match: {
+      requester,
+      partner,
+      topic: requester.topic,
+      language: requester.language,
+      difficulties: {
+        requester: requester.difficulty,
+        partner: partner.difficulty,
+      },
+      matchingType: 'same_difficulty',
+    },
   });
 });
 
