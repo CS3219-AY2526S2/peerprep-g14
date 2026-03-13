@@ -17,6 +17,8 @@ services:
     depends_on:
       - frontend
       - user-service
+      - auth-service
+      - matching-service
 
   auth-service:
     build:
@@ -56,11 +58,18 @@ services:
         - action: rebuild
           path: ./services/user-service/package.json
 
-  # --- SERVICE 2 (e.g., Matching Service) ---
-  # matching-service:
-  #   build:
-  #     context: ./matching-service
-  #     dockerfile: Dockerfile
+  # --- MATCHING SERVICE ---
+  matching-service:
+    build:
+      context: ./services/matching-service
+      dockerfile: Dockerfile
+    develop:
+      watch:
+        - action: sync
+          path: ./services/matching-service/src
+          target: /usr/src/app/src
+        - action: rebuild
+          path: ./services/matching-service/package.json
 
   # --- SERVICE 3 (e.g., Question Service) ---
   # question-service:

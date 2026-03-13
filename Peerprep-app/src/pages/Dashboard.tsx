@@ -10,10 +10,56 @@ export const Dashboard: React.FC = () => {
     const navigate = useNavigate();
     const [difficulty, setDifficulty] = useState('');
     const [topic, setTopic] = useState('');
+    const [language, setLanguage] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-    const handleStartMatching = () => {
-        if (difficulty && topic) {
-            navigate('/matching', { state: { difficulty, topic } });
+    const handleStartMatching = async () => {
+        if (!difficulty || !topic || !language || isSubmitting) {
+            return;
+        }
+
+        setIsSubmitting(true);
+        setErrorMessage(null);
+
+        try {
+            const response = await fetch('/api/matching/requests', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    difficulty,
+                    topic,
+                    language,
+                }),
+            });
+
+            const text = await response.text();
+            let data: any = null;
+
+            try {
+                data = JSON.parse(text);
+            } catch {
+                console.error('Non-JSON response from matching service:', text);
+            }
+
+            if (!response.ok) {
+                console.error('Match request failed:', response.status, data || text);
+                const firstError = data?.errors?.[0]?.message as string | undefined;
+                setErrorMessage(firstError || data?.message || 'Failed to submit match request.');
+                return;
+            }
+
+            const requestId = data?.matchRequest?.id as string | undefined;
+
+            navigate('/matching', { state: { difficulty, topic, language, requestId } });
+        } catch (err) {
+            console.error('Failed to reach matching service:', err);
+            setErrorMessage('Unable to reach matching service. Please try again.');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -35,6 +81,13 @@ export const Dashboard: React.FC = () => {
         { value: 'trees', label: 'Trees' },
         { value: 'graphs', label: 'Graphs' },
         { value: 'dp', label: 'Dynamic Programming' },
+    ];
+
+    const languageOptions = [
+        { value: '', label: 'Select Language' },
+        { value: 'java', label: 'Java' },
+        { value: 'python', label: 'Python' },
+        { value: 'cpp', label: 'C++' },
     ];
 
     return (
@@ -89,15 +142,30 @@ export const Dashboard: React.FC = () => {
                             />
                         </div>
 
+                        <div className="form-group mt-6">
+                            <Select
+                                label="Programming Language"
+                                options={languageOptions}
+                                value={language}
+                                onChange={(e) => setLanguage(e.target.value)}
+                            />
+                        </div>
+
                         <Button
                             size="lg"
                             className="w-full mt-8"
-                            disabled={!difficulty || !topic}
+                            disabled={!difficulty || !topic || !language || isSubmitting}
                             onClick={handleStartMatching}
                             rightIcon={<Play className="h-5 w-5" />}
                         >
-                            Find a Match
+                            {isSubmitting ? 'Submitting...' : 'Find a Match'}
                         </Button>
+
+                        {errorMessage && (
+                            <p className="form-error mt-4">
+                                {errorMessage}
+                            </p>
+                        )}
                     </Card>
 
                     <div className="dashboard-stats flex-col">

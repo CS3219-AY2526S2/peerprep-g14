@@ -8,8 +8,6 @@ import crypto from 'crypto';
 import bcrypt from 'bcrypt';
 
 import prisma from './prisma.js';
-
-
 dotenv.config();
 
 const app: Application = express();

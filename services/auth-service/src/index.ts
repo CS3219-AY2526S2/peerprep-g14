@@ -66,5 +66,11 @@ app.use('/users', verifyGateway, createProxyMiddleware({
   pathRewrite: { '^/api/users': '' }, // Clean path for the target service
 }));
 
+// If the path starts with /api/matching, send to matching-service
+app.use('/matching', verifyGateway, createProxyMiddleware({
+  target: 'http://matching-service:3002',
+  changeOrigin: true,
+  pathRewrite: { '^/api/matching': '' },
+}));
 
 app.listen(PORT, () => console.log(`Auth Service running on port ${PORT}`));

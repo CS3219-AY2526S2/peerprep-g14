@@ -8,6 +8,8 @@ import './Matching.css';
 interface LocationState {
     difficulty?: string;
     topic?: string;
+    language?: string;
+    requestId?: string;
 }
 
 export const Matching: React.FC = () => {
@@ -18,8 +20,8 @@ export const Matching: React.FC = () => {
     const [secondsElapsed, setSecondsElapsed] = useState(0);
 
     useEffect(() => {
-        // If accessed directly without state, redirect to dashboard
-        if (!state?.difficulty || !state?.topic) {
+        // If accessed directly without required state, redirect to dashboard
+        if (!state?.difficulty || !state?.topic || !state?.language) {
             navigate('/dashboard');
             return;
         }
@@ -72,6 +74,10 @@ export const Matching: React.FC = () => {
                         <div className="detail-item mt-2">
                             <span className="detail-label">Topic:</span>
                             <span className="detail-value tag">{state?.topic || 'Any'}</span>
+                        </div>
+                        <div className="detail-item mt-2">
+                            <span className="detail-label">Language:</span>
+                            <span className="detail-value tag">{state?.language || 'Any'}</span>
                         </div>
                     </div>
 
