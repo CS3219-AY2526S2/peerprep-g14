@@ -26,8 +26,19 @@ interface MatchRequest {
     createdAt: string;
 }
 
+interface MatchInfo {
+    partnerRequestId: string;
+    partnerUserId: string | null;
+    topic: string;
+    language: string;
+    requesterDifficulty: string;
+    partnerDifficulty: string;
+    matchingType: string;
+}
+
 interface MatchRequestResponse {
     matchRequest?: MatchRequest;
+    match?: MatchInfo | null;
     message?: string;
     error?: string;
 }
@@ -54,6 +65,21 @@ export const Matching: React.FC = () => {
     const [isLoadingRequest, setIsLoadingRequest] = useState(false);
     const [isCancelling, setIsCancelling] = useState(false);
     const [requestError, setRequestError] = useState<string | null>(null);
+
+    const attemptMatch = async () => {
+        try {
+            const response = await fetch('http://localhost:3002/matching/attempt', {
+                method: 'POST',
+            });
+
+            if (!response.ok) {
+                console.error('Match attempt failed with status:', response.status);
+            }
+        } catch (err) {
+            console.error('Failed to reach matching service for match attempt:', err);
+            // Do not override existing requestError here to keep this non-blocking.
+        }
+    };
 
     const loadRequestStatus = async () => {
         if (!state?.requestId) {
@@ -87,6 +113,25 @@ export const Matching: React.FC = () => {
 
             if (data?.matchRequest) {
                 setRequestInfo(data.matchRequest);
+
+                if (data.matchRequest.status === 'MATCHED') {
+                    navigate('/workspace', {
+                        state: {
+                            difficulty:
+                                data.match?.requesterDifficulty ?? data.matchRequest.difficulty,
+                            topic: data.match?.topic ?? data.matchRequest.topic,
+                            language: data.match?.language ?? data.matchRequest.language,
+                            matchRequestId: data.matchRequest.id,
+                            match: data.match ?? null,
+                        },
+                    });
+                    return;
+                }
+
+                if (data.matchRequest.status === 'CANCELLED') {
+                    navigate('/dashboard');
+                    return;
+                }
             }
         } catch (err) {
             console.error('Failed to reach matching service for status:', err);
@@ -98,20 +143,31 @@ export const Matching: React.FC = () => {
 
     useEffect(() => {
         // If accessed directly without required state, redirect to dashboard
-        if (!state?.difficulty || !state?.topic || !state?.language) {
+        if (!state?.difficulty || !state?.topic || !state?.language || !state?.requestId) {
             navigate('/dashboard');
             return;
         }
 
         // Timer for display
         const timer = setInterval(() => {
-            setSecondsElapsed((prev) => prev + 1);
+            setSecondsElapsed((prev: number) => prev + 1);
         }, 1000);
 
-        void loadRequestStatus();
+        const poller = setInterval(() => {
+            void (async () => {
+                await attemptMatch();
+                await loadRequestStatus();
+            })();
+        }, 2000);
+
+        void (async () => {
+            await attemptMatch();
+            await loadRequestStatus();
+        })();
 
         return () => {
             clearInterval(timer);
+            clearInterval(poller);
         };
     }, [navigate, state]);
 

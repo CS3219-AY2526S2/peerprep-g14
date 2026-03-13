@@ -80,8 +80,27 @@ app.get('/matching/requests/:id', (req: Request, res: Response) => {
     });
   }
 
+  let match: unknown = null;
+
+  if (request.status === 'MATCHED' && request.matchedWithRequestId) {
+    const partner = getMatchRequestById(request.matchedWithRequestId);
+
+    if (partner) {
+      match = {
+        partnerRequestId: partner.id,
+        partnerUserId: partner.userId,
+        topic: request.topic,
+        language: request.language,
+        requesterDifficulty: request.difficulty,
+        partnerDifficulty: partner.difficulty,
+        matchingType: request.matchingType ?? 'same_difficulty',
+      };
+    }
+  }
+
   return res.status(200).json({
     matchRequest: request,
+    match,
   });
 });
 

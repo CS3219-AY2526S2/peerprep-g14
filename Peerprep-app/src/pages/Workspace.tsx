@@ -7,6 +7,17 @@ import './Workspace.css';
 interface LocationState {
     difficulty?: string;
     topic?: string;
+    language?: string;
+    matchRequestId?: string;
+    match?: {
+        partnerRequestId: string;
+        partnerUserId: string | null;
+        topic: string;
+        language: string;
+        requesterDifficulty: string;
+        partnerDifficulty: string;
+        matchingType: string;
+    } | null;
 }
 
 export const Workspace: React.FC = () => {

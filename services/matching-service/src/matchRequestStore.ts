@@ -2,12 +2,15 @@ import crypto from 'crypto';
 import type { MatchRequestPayload } from './matchingValidation.js';
 
 export type MatchRequestStatus = 'PENDING' | 'MATCHED' | 'CANCELLED';
+export type MatchingType = 'same_difficulty';
 
 export interface StoredMatchRequest extends MatchRequestPayload {
   id: string;
   userId: string | null;
   status: MatchRequestStatus;
   createdAt: Date;
+  matchedWithRequestId?: string | null;
+  matchingType?: MatchingType;
 }
 
 const inMemoryMatchRequests: StoredMatchRequest[] = [];
@@ -172,8 +175,15 @@ export function markMatchRequestsMatched(
   const matched: StoredMatchRequest[] = [];
 
   for (const req of inMemoryMatchRequests) {
-    if (req.id === firstId || req.id === secondId) {
+    if (req.id === firstId) {
       req.status = 'MATCHED';
+      req.matchedWithRequestId = secondId;
+      req.matchingType = 'same_difficulty';
+      matched.push(req);
+    } else if (req.id === secondId) {
+      req.status = 'MATCHED';
+      req.matchedWithRequestId = firstId;
+      req.matchingType = 'same_difficulty';
       matched.push(req);
     }
   }
