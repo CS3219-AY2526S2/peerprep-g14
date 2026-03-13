@@ -15,6 +15,7 @@ export const Dashboard: React.FC = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [fakeUserId, setFakeUserId] = useState<string | null>(null);
+    const [allowLowerDifficultyMatch, setAllowLowerDifficultyMatch] = useState(false);
 
     useEffect(() => {
         const storageKey = 'peerprep_fake_user_id';
@@ -72,6 +73,7 @@ export const Dashboard: React.FC = () => {
                     topic,
                     language,
                     timeAvailableMinutes: timeAvailable ? Number(timeAvailable) : undefined,
+                    allowLowerDifficultyMatch,
                 }),
             });
 
@@ -101,6 +103,7 @@ export const Dashboard: React.FC = () => {
                     language,
                     requestId,
                     timeAvailableMinutes,
+                    allowLowerDifficultyMatch,
                 },
             });
         } catch (err) {
@@ -218,6 +221,18 @@ export const Dashboard: React.FC = () => {
                                 value={timeAvailable}
                                 onChange={(e) => setTimeAvailable(e.target.value)}
                             />
+                        </div>
+
+                        <div className="form-group mt-4 flex items-center gap-2">
+                            <input
+                                id="allow-lower-difficulty"
+                                type="checkbox"
+                                checked={allowLowerDifficultyMatch}
+                                onChange={(e) => setAllowLowerDifficultyMatch(e.target.checked)}
+                            />
+                            <label htmlFor="allow-lower-difficulty" className="text-sm text-secondary">
+                                Allow matching with easier questions (downward matching)
+                            </label>
                         </div>
 
                         <Button

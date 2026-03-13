@@ -1,8 +1,8 @@
 import crypto from 'crypto';
-import type { MatchRequestPayload } from './matchingValidation.js';
+import type { Difficulty, MatchRequestPayload } from './matchingValidation.js';
 
 export type MatchRequestStatus = 'PENDING' | 'MATCHED' | 'CANCELLED';
-export type MatchingType = 'same_difficulty';
+export type MatchingType = 'same_difficulty' | 'downward';
 
 export interface StoredMatchRequest extends MatchRequestPayload {
   id: string;
@@ -14,6 +14,12 @@ export interface StoredMatchRequest extends MatchRequestPayload {
 }
 
 const inMemoryMatchRequests: StoredMatchRequest[] = [];
+
+const difficultyRank: Record<Difficulty, number> = {
+  easy: 0,
+  medium: 1,
+  hard: 2,
+};
 
 function compareUserIds(a: string | null, b: string | null): number {
   if (a === b) {
@@ -137,7 +143,7 @@ export function getPendingMatchRequests(): StoredMatchRequest[] {
 }
 
 export function selectNextMatchPair():
-  | { requester: StoredMatchRequest; partner: StoredMatchRequest }
+  | { requester: StoredMatchRequest; partner: StoredMatchRequest; matchingType: MatchingType }
   | null {
   const pending = getPendingMatchRequests();
 
@@ -150,7 +156,8 @@ export function selectNextMatchPair():
   for (const requester of sortedPending) {
     const pool = getActivePool(requester.topic, requester.language);
 
-    const candidates = pool
+    // First, attempt same-difficulty matching (F5.3)
+    const sameDifficultyCandidates = pool
       .filter(
         (candidate) =>
           candidate.id !== requester.id &&
@@ -158,10 +165,38 @@ export function selectNextMatchPair():
       )
       .sort(compareStoredMatchRequests);
 
-    const partner = candidates[0];
+    const sameDifficultyPartner = sameDifficultyCandidates[0];
 
-    if (partner) {
-      return { requester, partner };
+    if (sameDifficultyPartner) {
+      return { requester, partner: sameDifficultyPartner, matchingType: 'same_difficulty' };
+    }
+
+    // If no same-difficulty partner exists, consider downward matching (F5.4)
+    if (!requester.allowLowerDifficultyMatch) {
+      // Selected user did not opt in to downward matching
+      continue;
+    }
+
+    const requesterRank = difficultyRank[requester.difficulty];
+
+    const downwardCandidates = pool
+      .filter((candidate) => {
+        if (candidate.id === requester.id) {
+          return false;
+        }
+
+        const candidateRank = difficultyRank[candidate.difficulty];
+
+        // Strictly lower difficulty than requester (F5.4.2),
+        // and never match anyone with higher difficulty than they selected (F5.5)
+        return candidateRank < requesterRank;
+      })
+      .sort(compareStoredMatchRequests);
+
+    const downwardPartner = downwardCandidates[0];
+
+    if (downwardPartner) {
+      return { requester, partner: downwardPartner, matchingType: 'downward' };
     }
   }
 
@@ -170,6 +205,7 @@ export function selectNextMatchPair():
 
 export function markMatchRequestsMatched(
   requestIds: [string, string],
+  matchingType: MatchingType,
 ): StoredMatchRequest[] {
   const [firstId, secondId] = requestIds;
   const matched: StoredMatchRequest[] = [];
@@ -178,12 +214,12 @@ export function markMatchRequestsMatched(
     if (req.id === firstId) {
       req.status = 'MATCHED';
       req.matchedWithRequestId = secondId;
-      req.matchingType = 'same_difficulty';
+      req.matchingType = matchingType;
       matched.push(req);
     } else if (req.id === secondId) {
       req.status = 'MATCHED';
       req.matchedWithRequestId = firstId;
-      req.matchingType = 'same_difficulty';
+      req.matchingType = matchingType;
       matched.push(req);
     }
   }

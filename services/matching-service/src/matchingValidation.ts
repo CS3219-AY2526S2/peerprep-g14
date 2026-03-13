@@ -30,9 +30,15 @@ export interface MatchRequestPayload {
   difficulty: Difficulty;
   language: Language;
   timeAvailableMinutes?: TimeAvailableMinutes | undefined;
+  allowLowerDifficultyMatch?: boolean | undefined;
 }
 
-export type MatchField = 'topic' | 'difficulty' | 'language' | 'timeAvailableMinutes';
+export type MatchField =
+  | 'topic'
+  | 'difficulty'
+  | 'language'
+  | 'timeAvailableMinutes'
+  | 'allowLowerDifficultyMatch';
 
 export interface ValidationErrorDetail {
   field: MatchField;
@@ -56,6 +62,7 @@ export function validateMatchRequestPayload(body: unknown): ValidationResult {
   const rawDifficulty = asRecord.difficulty;
   const rawLanguage = asRecord.language;
   const rawTimeAvailable = asRecord.timeAvailableMinutes ?? asRecord.timeAvailable;
+  const rawAllowLower = asRecord.allowLowerDifficultyMatch;
 
   if (rawTopic === undefined || rawTopic === null || rawTopic === '') {
     errors.push({
@@ -143,6 +150,36 @@ export function validateMatchRequestPayload(body: unknown): ValidationResult {
     }
   }
 
+  // Optional preference: allow matching with lower difficulty
+  let allowLowerDifficultyMatch = false;
+  if (rawAllowLower !== undefined && rawAllowLower !== null && rawAllowLower !== '') {
+    if (Array.isArray(rawAllowLower)) {
+      errors.push({
+        field: 'allowLowerDifficultyMatch',
+        message: 'allowLowerDifficultyMatch must be a single boolean value.',
+      });
+    } else if (typeof rawAllowLower === 'boolean') {
+      allowLowerDifficultyMatch = rawAllowLower;
+    } else if (typeof rawAllowLower === 'string') {
+      const normalized = rawAllowLower.trim().toLowerCase();
+      if (normalized === 'true' || normalized === '1' || normalized === 'on') {
+        allowLowerDifficultyMatch = true;
+      } else if (normalized === 'false' || normalized === '0' || normalized === 'off') {
+        allowLowerDifficultyMatch = false;
+      } else {
+        errors.push({
+          field: 'allowLowerDifficultyMatch',
+          message: 'allowLowerDifficultyMatch must be "true" or "false" if provided.',
+        });
+      }
+    } else {
+      errors.push({
+        field: 'allowLowerDifficultyMatch',
+        message: 'allowLowerDifficultyMatch must be a boolean value.',
+      });
+    }
+  }
+
   if (errors.length > 0) {
     return { errors };
   }
@@ -153,6 +190,7 @@ export function validateMatchRequestPayload(body: unknown): ValidationResult {
       difficulty: difficulty as Difficulty,
       language: language as Language,
       timeAvailableMinutes,
+      allowLowerDifficultyMatch,
     },
   };
 }

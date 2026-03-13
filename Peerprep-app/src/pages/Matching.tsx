@@ -11,6 +11,7 @@ interface LocationState {
     language?: string;
     requestId?: string;
     timeAvailableMinutes?: number;
+    allowLowerDifficultyMatch?: boolean;
 }
 
 type MatchRequestStatus = 'PENDING' | 'MATCHED' | 'CANCELLED';

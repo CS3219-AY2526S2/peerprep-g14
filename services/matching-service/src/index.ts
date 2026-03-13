@@ -152,9 +152,9 @@ app.post('/matching/attempt', (_req: Request, res: Response) => {
     });
   }
 
-  const { requester, partner } = pair;
+  const { requester, partner, matchingType } = pair;
 
-  markMatchRequestsMatched([requester.id, partner.id]);
+  markMatchRequestsMatched([requester.id, partner.id], matchingType);
 
   return res.status(200).json({
     message: 'Match formed.',
@@ -167,7 +167,7 @@ app.post('/matching/attempt', (_req: Request, res: Response) => {
         requester: requester.difficulty,
         partner: partner.difficulty,
       },
-      matchingType: 'same_difficulty',
+      matchingType,
     },
   });
 });
