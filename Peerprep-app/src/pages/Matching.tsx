@@ -13,12 +13,88 @@ interface LocationState {
     timeAvailableMinutes?: number;
 }
 
+type MatchRequestStatus = 'PENDING' | 'MATCHED' | 'CANCELLED';
+
+interface MatchRequest {
+    id: string;
+    userId: string | null;
+    status: MatchRequestStatus;
+    topic: string;
+    difficulty: string;
+    language: string;
+    timeAvailableMinutes?: number;
+    createdAt: string;
+}
+
+interface MatchRequestResponse {
+    matchRequest?: MatchRequest;
+    message?: string;
+    error?: string;
+}
+
+const getFakeUserIdFromSession = (): string | null => {
+    try {
+        const stored = window.sessionStorage.getItem('peerprep_fake_user_id');
+        if (stored && stored.trim() !== '') {
+            return stored.trim();
+        }
+    } catch (err) {
+        console.error('Failed to read fake user id from sessionStorage', err);
+    }
+    return null;
+};
+
 export const Matching: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const state = location.state as LocationState;
 
     const [secondsElapsed, setSecondsElapsed] = useState(0);
+    const [requestInfo, setRequestInfo] = useState<MatchRequest | null>(null);
+    const [isLoadingRequest, setIsLoadingRequest] = useState(false);
+    const [isCancelling, setIsCancelling] = useState(false);
+    const [requestError, setRequestError] = useState<string | null>(null);
+
+    const loadRequestStatus = async () => {
+        if (!state?.requestId) {
+            return;
+        }
+
+        setIsLoadingRequest(true);
+        setRequestError(null);
+
+        try {
+            const response = await fetch(
+                `http://localhost:3002/matching/requests/${state.requestId}`,
+            );
+            const text = await response.text();
+            let data: MatchRequestResponse | null = null;
+
+            try {
+                data = JSON.parse(text) as MatchRequestResponse;
+            } catch {
+                console.error('Non-JSON response from matching service (status):', text);
+            }
+
+            if (!response.ok) {
+                console.error('Failed to load match request status:', response.status, data || text);
+                setRequestError(
+                    (data && (data.message || data.error)) ||
+                        'Failed to load match request status.',
+                );
+                return;
+            }
+
+            if (data?.matchRequest) {
+                setRequestInfo(data.matchRequest);
+            }
+        } catch (err) {
+            console.error('Failed to reach matching service for status:', err);
+            setRequestError('Unable to reach matching service for status. Please try again.');
+        } finally {
+            setIsLoadingRequest(false);
+        }
+    };
 
     useEffect(() => {
         // If accessed directly without required state, redirect to dashboard
@@ -32,19 +108,68 @@ export const Matching: React.FC = () => {
             setSecondsElapsed((prev) => prev + 1);
         }, 1000);
 
-        // Simulate finding a match after 5 seconds
-        const matchTimer = setTimeout(() => {
-            navigate('/workspace', { state });
-        }, 5000);
+        void loadRequestStatus();
 
         return () => {
             clearInterval(timer);
-            clearTimeout(matchTimer);
         };
     }, [navigate, state]);
 
-    const handleCancel = () => {
-        navigate('/dashboard');
+    const handleCancel = async () => {
+        if (!state?.requestId) {
+            navigate('/dashboard');
+            return;
+        }
+
+        const fakeUserId = getFakeUserIdFromSession();
+        if (!fakeUserId) {
+            setRequestError(
+                'Unable to determine test user id for cancellation. Please return to the dashboard and try again.',
+            );
+            return;
+        }
+
+        setIsCancelling(true);
+        setRequestError(null);
+
+        try {
+            const response = await fetch(
+                `http://localhost:3002/matching/requests/${state.requestId}`,
+                {
+                    method: 'DELETE',
+                    headers: {
+                        'x-user-id': fakeUserId,
+                    },
+                },
+            );
+
+            const text = await response.text();
+            let data: MatchRequestResponse | null = null;
+
+            try {
+                data = JSON.parse(text) as MatchRequestResponse;
+            } catch {
+                console.error('Non-JSON response from matching service (cancel):', text);
+            }
+
+            if (!response.ok) {
+                console.error('Cancel match request failed:', response.status, data || text);
+                setRequestError(
+                    (data && (data.message || data.error)) ||
+                        'Failed to cancel match request.',
+                );
+                return;
+            }
+
+            if (data?.matchRequest) {
+                setRequestInfo(data.matchRequest);
+            }
+        } catch (err) {
+            console.error('Failed to reach matching service for cancellation:', err);
+            setRequestError('Unable to reach matching service for cancellation. Please try again.');
+        } finally {
+            setIsCancelling(false);
+        }
     };
 
     const formatTime = (seconds: number) => {
@@ -93,13 +218,41 @@ export const Matching: React.FC = () => {
                         <p className="timer-subtext">Estimated wait time: 00:30</p>
                     </div>
 
+                    {requestInfo && (
+                        <div className="mt-6 text-left text-sm">
+                            <p className="mb-1">
+                                <span className="font-semibold">Request ID:</span>{' '}
+                                <span className="font-mono break-all">{requestInfo.id}</span>
+                            </p>
+                            <p className="mb-1">
+                                <span className="font-semibold">User:</span>{' '}
+                                <span className="font-mono break-all">
+                                    {requestInfo.userId ?? '(none)'}
+                                </span>
+                            </p>
+                            <p className="mb-1">
+                                <span className="font-semibold">Status:</span>{' '}
+                                <span className="tag">{requestInfo.status}</span>
+                            </p>
+                        </div>
+                    )}
+
+                    {isLoadingRequest && (
+                        <p className="mt-4 text-xs opacity-60">Loading request status…</p>
+                    )}
+
+                    {requestError && (
+                        <p className="mt-4 text-xs text-red-500">{requestError}</p>
+                    )}
+
                     <Button
                         variant="ghost"
                         onClick={handleCancel}
+                        disabled={isCancelling}
                         className="mt-8"
                         leftIcon={<X className="h-4 w-4" />}
                     >
-                        Cancel Search
+                        {isCancelling ? 'Cancelling...' : 'Cancel Search'}
                     </Button>
                 </Card>
             </div>

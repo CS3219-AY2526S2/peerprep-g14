@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BookOpen, Target, Play, User as UserIcon, LogOut } from 'lucide-react';
 import { Card } from '../components/Card';
@@ -14,9 +14,45 @@ export const Dashboard: React.FC = () => {
     const [timeAvailable, setTimeAvailable] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [fakeUserId, setFakeUserId] = useState<string | null>(null);
+
+    useEffect(() => {
+        const storageKey = 'peerprep_fake_user_id';
+        let nextId: string | null = null;
+
+        try {
+            const url = new URL(window.location.href);
+            const paramUser = url.searchParams.get('user');
+
+            if (paramUser && paramUser.trim() !== '') {
+                nextId = paramUser.trim();
+            } else {
+                const stored = window.sessionStorage.getItem(storageKey);
+                if (stored && stored.trim() !== '') {
+                    nextId = stored.trim();
+                }
+            }
+
+            if (!nextId) {
+                nextId = window.crypto?.randomUUID
+                    ? window.crypto.randomUUID()
+                    : `user-${Math.random().toString(36).slice(2, 10)}`;
+            }
+
+            window.sessionStorage.setItem(storageKey, nextId);
+            setFakeUserId(nextId);
+        } catch (err) {
+            console.error('Failed to initialise fake user id', err);
+        }
+    }, []);
 
     const handleStartMatching = async () => {
         if (!difficulty || !topic || !language || isSubmitting) {
+            return;
+        }
+
+        if (!fakeUserId) {
+            setErrorMessage('Unable to determine test user id. Please refresh the page and try again.');
             return;
         }
 
@@ -24,10 +60,11 @@ export const Dashboard: React.FC = () => {
         setErrorMessage(null);
 
         try {
-            const response = await fetch('/api/matching/requests', {
+            const response = await fetch('http://localhost:3002/matching/requests', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'x-user-id': fakeUserId,
                 },
                 credentials: 'include',
                 body: JSON.stringify({
@@ -132,6 +169,11 @@ export const Dashboard: React.FC = () => {
                     <p className="dashboard-subtitle">
                         Select your preferred difficulty and topic to find a peer for your next mock interview.
                     </p>
+                    {fakeUserId && (
+                        <p className="text-xs opacity-60 mt-1">
+                            Test user: <span className="font-mono">{fakeUserId}</span>
+                        </p>
+                    )}
                 </div>
 
                 <div className="dashboard-cards">

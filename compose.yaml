@@ -63,6 +63,11 @@ services:
     build:
       context: ./services/matching-service
       dockerfile: Dockerfile
+    environment:
+      - PORT=3002
+      - FRONTEND_ORIGIN=http://localhost
+    ports:
+      - "3002:3002"
     develop:
       watch:
         - action: sync

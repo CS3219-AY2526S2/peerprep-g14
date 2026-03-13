@@ -4,7 +4,12 @@ import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 
 import { validateMatchRequestPayload } from './matchingValidation.js';
-import { recordMatchRequest } from './matchRequestStore.js';
+import {
+  cancelMatchRequest,
+  findActiveRequestByUserId,
+  getMatchRequestById,
+  recordMatchRequest,
+} from './matchRequestStore.js';
 
 dotenv.config();
 
@@ -38,11 +43,81 @@ app.post('/matching/requests', (req: Request, res: Response) => {
     ? rawUserId[0] ?? null
     : (rawUserId ?? null);
 
+  if (!userId) {
+    return res.status(401).json({
+      error: 'AUTH_REQUIRED',
+      message: 'x-user-id header is required.',
+    });
+  }
+
+  const existingPending = findActiveRequestByUserId(userId);
+  if (existingPending) {
+    return res.status(409).json({
+      error: 'ACTIVE_MATCH_REQUEST_EXISTS',
+      message: 'User already has an active pending match request.',
+      matchRequestId: existingPending.id,
+    });
+  }
+
   const stored = recordMatchRequest(userId, value!);
 
   return res.status(201).json({
     message: 'Match request recorded for processing.',
     matchRequest: stored,
+  });
+});
+
+app.get('/matching/requests/:id', (req: Request, res: Response) => {
+  const requestId = req.params.id as string;
+  const request = getMatchRequestById(requestId);
+
+  if (!request) {
+    return res.status(404).json({
+      error: 'MATCH_REQUEST_NOT_FOUND',
+      message: 'Match request not found.',
+    });
+  }
+
+  return res.status(200).json({
+    matchRequest: request,
+  });
+});
+
+app.delete('/matching/requests/:id', (req: Request, res: Response) => {
+  const headers = req.headers;
+  const rawUserId = headers['x-user-id'];
+  const userId: string | null = Array.isArray(rawUserId)
+    ? rawUserId[0] ?? null
+    : (rawUserId ?? null);
+
+  if (!userId) {
+    return res.status(401).json({
+      error: 'AUTH_REQUIRED',
+      message: 'x-user-id header is required.',
+    });
+  }
+
+  const requestId = req.params.id as string;
+  const result = cancelMatchRequest(requestId, userId);
+
+  if (result.status === 'NOT_FOUND_OR_NOT_OWNED') {
+    return res.status(404).json({
+      error: 'MATCH_REQUEST_NOT_FOUND',
+      message: 'Match request not found for this user.',
+    });
+  }
+
+  if (result.status === 'NOT_PENDING') {
+    return res.status(409).json({
+      error: 'MATCH_REQUEST_NOT_PENDING',
+      message: 'Only pending match requests can be cancelled.',
+      matchRequest: result.request,
+    });
+  }
+
+  return res.status(200).json({
+    message: 'Match request cancelled.',
+    matchRequest: result.request,
   });
 });
 
