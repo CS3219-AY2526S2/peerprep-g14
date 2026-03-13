@@ -164,6 +164,8 @@ export const Matching: React.FC = () => {
             if (data?.matchRequest) {
                 setRequestInfo(data.matchRequest);
             }
+
+            navigate('/dashboard');
         } catch (err) {
             console.error('Failed to reach matching service for cancellation:', err);
             setRequestError('Unable to reach matching service for cancellation. Please try again.');
