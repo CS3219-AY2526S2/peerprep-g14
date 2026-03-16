@@ -167,7 +167,7 @@ func (q *QuestionService) GetQuestions(difficulty string, topic string, client *
 		filter["Difficulty"] = difficulty
 	}
 	if topic != "" {
-		filter["Topics"] = topic
+		filter["Topics"] = bson.M{"$in": []string{topic}}
 	}
 
 	cursor, err := questionColl.Find(context.TODO(), filter)
