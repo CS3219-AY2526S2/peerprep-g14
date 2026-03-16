@@ -1,13 +1,3 @@
-// Separating the runtime 'express' from the 'type' definitions
-import express, { type Request, type Response, type Application } from 'express';
-import cors, { type CorsOptions } from 'cors';
-import dotenv from 'dotenv';
-import cookieParser from 'cookie-parser';
-import jwt from 'jsonwebtoken';
-import crypto from 'crypto';
-import bcrypt from 'bcrypt';
-
-import prisma from './prisma.js';
 import express, { type Application } from "express";
 import cors, { type CorsOptions } from "cors";
 import dotenv from "dotenv";

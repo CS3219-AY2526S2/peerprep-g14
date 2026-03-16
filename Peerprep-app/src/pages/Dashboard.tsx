@@ -61,7 +61,7 @@ export const Dashboard: React.FC = () => {
         setErrorMessage(null);
 
         try {
-            const response = await fetch('http://localhost:3002/matching/requests', {
+            const response = await fetch('http://localhost:3003/matching/requests', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -189,7 +189,7 @@ export const Dashboard: React.FC = () => {
                                 label="Difficulty Level"
                                 options={difficultyOptions}
                                 value={difficulty}
-                                onChange={(e) => setDifficulty(e.target.value)}
+                                onChange={setDifficulty}
                             />
                         </div>
 
@@ -198,7 +198,7 @@ export const Dashboard: React.FC = () => {
                                 label="Interview Topic"
                                 options={topicOptions}
                                 value={topic}
-                                onChange={(e) => setTopic(e.target.value)}
+                                onChange={setTopic}
                                 leftIcon={<BookOpen className="h-5 w-5" />}
                             />
                         </div>
@@ -208,7 +208,7 @@ export const Dashboard: React.FC = () => {
                                 label="Programming Language"
                                 options={languageOptions}
                                 value={language}
-                                onChange={(e) => setLanguage(e.target.value)}
+                                onChange={setLanguage}
                             />
                         </div>
 
@@ -217,7 +217,7 @@ export const Dashboard: React.FC = () => {
                                 label="Time Available (optional)"
                                 options={timeOptions}
                                 value={timeAvailable}
-                                onChange={(e) => setTimeAvailable(e.target.value)}
+                                onChange={setTimeAvailable}
                             />
                         </div>
 
@@ -266,60 +266,5 @@ export const Dashboard: React.FC = () => {
                 </div>
             </main>
         </div>
-
-        <div className="dashboard-cards">
-          <Card glow className="selection-card">
-            <div className="flex flex-row">
-              <Target className="h-6 w-6 mr-2 text-accent-primary" />
-              <h2 className="card-title flex-center">Configure Session</h2>
-            </div>
-
-            <div className="form-group">
-              <Select
-                label="Interview Topic"
-                placeholder="Select Topic"
-                options={topicOptions}
-                value={topic}
-                onChange={setTopic}
-                leftIcon={<BookOpen className="h-5 w-5" />}
-              />
-
-              <Select
-                label="Difficulty Level"
-                placeholder="Select Difficulty"
-                options={difficultyOptions}
-                value={difficulty}
-                onChange={setDifficulty}
-                leftIcon={<CircleGauge className="h-5 w-5" />}
-              />
-            </div>
-
-            <Button
-              size="lg"
-              className="w-full mt-8"
-              disabled={!difficulty || !topic}
-              onClick={handleStartMatching}
-              rightIcon={<Play className="h-5 w-5" />}
-            >
-              Find a Match
-            </Button>
-          </Card>
-
-          <div className="dashboard-stats flex-col">
-            <Card className="stat-card">
-              <h3>Recent Topics</h3>
-              <div className="tags">
-                <span className="tag">Arrays</span>
-                <span className="tag">Trees</span>
-              </div>
-            </Card>
-            <Card className="stat-card mt-4">
-              <h3>Sessions Completed</h3>
-              <div className="stat-number">12</div>
-            </Card>
-          </div>
-        </div>
-      </main>
-    </div>
   );
 };

@@ -160,37 +160,21 @@ export const AdminDashboard: React.FC = () => {
     }
   };
 
-        try {
-            if (editingId) {
-                console.log('Updating ID:', editingId);
-                console.log('Payload:', formData);
-                await updateQuestion(editingId, formData);
-                const result = await updateQuestion(editingId, formData);
-                console.log('Update result:', result);
-            } else {
-                await createQuestion(formData);
-            }
-            setIsFormModalOpen(false);
-            await loadQuestions(); // refresh table after saving
-        } catch (error) {
-            console.error("Error saving question:", error);
-            alert("Failed to save question. Please check the console or backend logs.");
-        }
-    };
+  const handleConfirmDelete = async () => {
+    if (!questionToDelete) return;
 
-    const handleConfirmDelete = async () => {
-        if (questionToDelete) {
-            try {
-                await deleteQuestion(questionToDelete.id);
-                setIsDeleteModalOpen(false);
-                setQuestionToDelete(null);
-                await loadQuestions(); // refresh table after deleting
-            } catch (error) {
-                console.error("Error deleting question:", error);
-                alert("Failed to delete question. Please check the console or backend logs.");
-            }
-        }
-    };
+    try {
+      await deleteQuestion(questionToDelete.id);
+      setIsDeleteModalOpen(false);
+      setQuestionToDelete(null);
+      await loadQuestions(); // refresh table after deleting
+    } catch (error) {
+      console.error("Error deleting question:", error);
+      alert(
+        "Failed to delete question. Please check the console or backend logs.",
+      );
+    }
+  };
 
   // --- Format helper for table display ---
   const getTopicLabel = (value: string) => {
