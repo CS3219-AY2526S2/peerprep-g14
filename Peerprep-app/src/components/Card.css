@@ -1,34 +1,41 @@
 .card {
-    background: rgba(30, 41, 59, 0.6);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid var(--border-light);
-    border-radius: var(--radius-xl);
-    padding: 2rem;
-    box-shadow: var(--shadow-lg);
-    transition: all var(--transition-normal);
-    position: relative;
-    overflow: hidden;
+  background: var(--bg-tertiary);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-xl);
+  padding: 2rem;
+  box-shadow: var(--shadow-lg);
+  transition: all var(--transition-normal);
+  position: relative;
+  /* overflow: hidden; */
 }
 
 .card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    opacity: 0.5;
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  opacity: 0.5;
 }
 
 .card-glow {
-    box-shadow: 0 0 40px -10px var(--accent-glow);
-    border-color: rgba(99, 102, 241, 0.3);
+  box-shadow: 0 0 40px -10px var(--accent-glow);
+  border-color: rgba(99, 102, 241, 0.3);
 }
 
 .card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-xl), 0 0 20px -5px var(--accent-glow);
-    border-color: rgba(99, 102, 241, 0.4);
+  transform: translateY(-2px);
+  box-shadow:
+    var(--shadow-xl),
+    0 0 20px -5px var(--accent-glow);
+  border-color: rgba(99, 102, 241, 0.4);
 }

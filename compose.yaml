@@ -19,16 +19,24 @@ services:
       - user-service
       - auth-service
       - matching-service
+      - question-service
 
   auth-service:
+    ports:
+      - "3000:3000"
     build:
       context: ./services/auth-service
       dockerfile: Dockerfile
+    tty: true
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    volumes:
+      - ./services/auth-service/src:/usr/src/app/src
     develop:
       watch:
-        - action: sync
+        - action: sync+restart
           path: ./services/auth-service/src
-          target: /usr/src/app/src   # Changed from /app to /usr/src/app/src
+          target: /usr/src/app/src # Changed from /app to /usr/src/app/src
         - action: rebuild
           path: ./services/auth-service/package.json
 
@@ -44,17 +52,30 @@ services:
         - action: sync
           path: ./Peerprep-app # Watch only frontend changes
           target: /Peerprep-app
+        - action: sync
+          path: ./services/question-service # Watch only frontend changes
+          target: /Peerprep-app
+
+    environment:
+      - CHOKIDAR_USEPOLLING=true
 
   # --- USER SERVICE ---
   user-service:
+    ports:
+      - "3001:3001"
     build:
       context: ./services/user-service # Path to your user service folder
       dockerfile: Dockerfile
+    tty: true
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    volumes:
+      - ./services/user-service/src:/usr/src/app/src
     develop:
       watch:
-        - action: sync
+        - action: sync+restart
           path: ./services/user-service/src
-          target: /usr/src/app/src   # Changed from /app to /usr/src/app/src
+          target: /usr/src/app/src # Changed from /app to /usr/src/app/src
         - action: rebuild
           path: ./services/user-service/package.json
 
@@ -77,12 +98,30 @@ services:
           path: ./services/matching-service/package.json
 
   # --- SERVICE 3 (e.g., Question Service) ---
-  # question-service:
-  #   build:
-  #     context: ./services/question-service
-  #     dockerfile: Dockerfile
-
-  # # --- OPTIONAL: DATABASE ---
+  question-service:
+    ports:
+      - "3002:3002"
+    env_file:
+      - ./services/question-service/.env
+    platform: linux/amd64
+    build:
+      context: ./services/question-service
+      dockerfile: Dockerfile
+    depends_on:
+      - auth-service # if it depends on auth
+    restart: on-failure
+    develop:
+      watch:
+        - action: sync
+          path: ./services/question-service
+          target: /app
+    # image: golang
+    # develop:
+    #   watch:
+    #     - action: sync
+    #       path: ./services/question-service
+    #       target: /app
+  # --- OPTIONAL: DATABASE ---
   # db:
   #   image: mongo:latest            # Or postgres, redis, etc.
   #   ports:

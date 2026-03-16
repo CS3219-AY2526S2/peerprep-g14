@@ -114,25 +114,23 @@ export const Dashboard: React.FC = () => {
         }
     };
 
-    const difficultyOptions = [
-        { value: '', label: 'Select Difficulty' },
-        { value: 'easy', label: 'Easy' },
-        { value: 'medium', label: 'Medium' },
-        { value: 'hard', label: 'Hard' },
-    ];
+  const difficultyOptions = [
+    { value: "easy", label: "Easy" },
+    { value: "medium", label: "Medium" },
+    { value: "hard", label: "Hard" },
+  ];
 
-    const topicOptions = [
-        { value: '', label: 'Select a Topic' },
-        { value: 'arrays', label: 'Arrays & Hashing' },
-        { value: 'two-pointers', label: 'Two Pointers' },
-        { value: 'sliding-window', label: 'Sliding Window' },
-        { value: 'stack', label: 'Stack' },
-        { value: 'binary-search', label: 'Binary Search' },
-        { value: 'linked-list', label: 'Linked List' },
-        { value: 'trees', label: 'Trees' },
-        { value: 'graphs', label: 'Graphs' },
-        { value: 'dp', label: 'Dynamic Programming' },
-    ];
+  const topicOptions = [
+    { value: "arrays", label: "Arrays & Hashing" },
+    { value: "two-pointers", label: "Two Pointers" },
+    { value: "sliding-window", label: "Sliding Window" },
+    { value: "stack", label: "Stack" },
+    { value: "binary-search", label: "Binary Search" },
+    { value: "linked-list", label: "Linked List" },
+    { value: "trees", label: "Trees" },
+    { value: "graphs", label: "Graphs" },
+    { value: "dp", label: "Dynamic Programming" },
+  ];
 
     const languageOptions = [
         { value: '', label: 'Select Language' },
@@ -268,5 +266,60 @@ export const Dashboard: React.FC = () => {
                 </div>
             </main>
         </div>
-    );
+
+        <div className="dashboard-cards">
+          <Card glow className="selection-card">
+            <div className="flex flex-row">
+              <Target className="h-6 w-6 mr-2 text-accent-primary" />
+              <h2 className="card-title flex-center">Configure Session</h2>
+            </div>
+
+            <div className="form-group">
+              <Select
+                label="Interview Topic"
+                placeholder="Select Topic"
+                options={topicOptions}
+                value={topic}
+                onChange={setTopic}
+                leftIcon={<BookOpen className="h-5 w-5" />}
+              />
+
+              <Select
+                label="Difficulty Level"
+                placeholder="Select Difficulty"
+                options={difficultyOptions}
+                value={difficulty}
+                onChange={setDifficulty}
+                leftIcon={<CircleGauge className="h-5 w-5" />}
+              />
+            </div>
+
+            <Button
+              size="lg"
+              className="w-full mt-8"
+              disabled={!difficulty || !topic}
+              onClick={handleStartMatching}
+              rightIcon={<Play className="h-5 w-5" />}
+            >
+              Find a Match
+            </Button>
+          </Card>
+
+          <div className="dashboard-stats flex-col">
+            <Card className="stat-card">
+              <h3>Recent Topics</h3>
+              <div className="tags">
+                <span className="tag">Arrays</span>
+                <span className="tag">Trees</span>
+              </div>
+            </Card>
+            <Card className="stat-card mt-4">
+              <h3>Sessions Completed</h3>
+              <div className="stat-number">12</div>
+            </Card>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
 };

@@ -1,18 +1,21 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Mail, Lock, User } from "lucide-react";
+import { Mail, Lock } from "lucide-react";
 import { Input } from "../components/Input";
 import { Button } from "../components/Button";
+import { useAuth } from "../context/AuthContext";
 import "./Login.css";
+import "../styles/Layout.css";
 
 export const Login: React.FC = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [isAdminMode, setIsAdminMode] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-    // --- ADD THESE STATES ---
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+  // --- ADD THESE STATES ---
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   // This is for user login with github
   const handleLogin = () => {
@@ -32,6 +35,7 @@ export const Login: React.FC = () => {
       const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include", // Ensure cookies are saved
         body: JSON.stringify({
           email,
           password,
@@ -46,9 +50,11 @@ export const Login: React.FC = () => {
       }
 
       // PeerPrep logic: Redirect based on admin status
-      if (data.isAdmin || isAdminMode) {
+      if (data.user?.role === "ADMIN" || isAdminMode) {
+        login(data.user.id, data.user.role);
         navigate("/admin");
       } else {
+        login(data.user.id, data.user.role);
         navigate("/dashboard");
       }
     } catch (error: any) {
@@ -59,7 +65,7 @@ export const Login: React.FC = () => {
   };
 
   return (
-    <div className="login-background">
+    <div className="linear-gradient-background page-shell">
       <div className="dotted-card">
         <div className="brand-panel">
           <h1 className="brand-text">PeerPrep</h1>

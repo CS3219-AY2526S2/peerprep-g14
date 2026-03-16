@@ -1,17 +1,17 @@
 .spinner-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .text-accent-primary {
-    color: var(--accent-primary);
+  color: var(--accent-primary);
 }
 
 .text-text-secondary {
-    color: var(--text-secondary);
+  color: var(--text-secondary);
 }
 
 .text-white {
-    color: #ffffff;
+  color: #ffffff;
 }

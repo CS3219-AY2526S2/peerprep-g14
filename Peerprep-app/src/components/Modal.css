@@ -1,90 +1,92 @@
 .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(15, 23, 42, 0.75);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    padding: 1.5rem;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1.5rem;
 }
 
 @keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px) scale(0.95);
-    }
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
 
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .modal-container {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-light);
-    border-radius: var(--radius-xl);
-    box-shadow: var(--shadow-xl), 0 0 40px rgba(0, 0, 0, 0.5);
-    width: 100%;
-    max-width: 500px;
-    max-height: 90vh;
-    display: flex;
-    flex-direction: column;
-    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-xl);
+  box-shadow:
+    var(--shadow-xl),
+    0 0 40px rgba(0, 0, 0, 0.5);
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .modal-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1.5rem;
-    border-bottom: 1px solid var(--border-light);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border-light);
 }
 
 .modal-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
 }
 
 .modal-close-btn {
-    background: transparent;
-    border: none;
-    color: var(--text-secondary);
-    cursor: pointer;
-    padding: 0.5rem;
-    border-radius: var(--radius-full);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all var(--transition-fast);
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
 }
 
 .modal-close-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
 }
 
 .modal-content {
-    padding: 1.5rem;
-    overflow-y: auto;
-    flex: 1;
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
 }
 
 .modal-footer {
-    padding: 1.5rem;
-    border-top: 1px solid var(--border-light);
-    display: flex;
-    justify-content: flex-end;
-    gap: 1rem;
-    background: rgba(15, 23, 42, 0.4);
-    border-bottom-left-radius: var(--radius-xl);
-    border-bottom-right-radius: var(--radius-xl);
+  padding: 1.5rem;
+  border-top: 1px solid var(--border-light);
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  background: rgba(15, 23, 42, 0.4);
+  border-bottom-left-radius: var(--radius-xl);
+  border-bottom-right-radius: var(--radius-xl);
 }

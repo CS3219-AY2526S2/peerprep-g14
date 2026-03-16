@@ -14,10 +14,13 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
-func ConnectMongo() *mongo.Client {
+var Client *mongo.Client
+
+func ConnectMongo() *mongo.Client{
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		// log.Fatal("Error loading .env file")
+		log.Println("Warning: No .env file found. Relying on system environment variables.")
 	}
 	uri := os.Getenv("MONGODB_URI")
 	docs := "www.mongodb.com/docs/drivers/go/current/"
@@ -40,9 +43,10 @@ func ConnectMongo() *mongo.Client {
 		log.Fatalf("Failed to initialize MongoDB client: %v", err)
 	}
 	if err := client.Ping(ctx, nil); err != nil {
-        log.Fatalf("Could not connect to MongoDB: %v", err)
-    }
-	log.Println("Successfully connected to MongoDB!")
+        log.Printf("Could not connect to MongoDB (this is fine for local API testing without DB): %v", err)
+    } else {
+		log.Println("Successfully connected to MongoDB!")
+	}
 
 	// defer func() {
 	// 	if err := client.Disconnect(context.TODO()); err != nil {
@@ -50,7 +54,7 @@ func ConnectMongo() *mongo.Client {
 	// 	}
 	// }()
 
-	return client
+	// Client = client
 
 	// database := "questionTestcaseDB"
 	// question_col := "testcase_collection"
@@ -75,7 +79,7 @@ func ConnectMongo() *mongo.Client {
 	// }
 	// fmt.Printf("%s\n", jsonData)
 
-	// return client
+	return client
 }
 
 func closeConnection(client *mongo.Client) {

@@ -1,139 +1,141 @@
 .matching-layout {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-image: radial-gradient(circle at center, rgba(99, 102, 241, 0.1), transparent 50%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-tertiary);
+  background-image: radial-gradient(
+    circle at center,
+    rgba(20, 20, 51, 1),
+    transparent 100%
+  );
 }
 
 .matching-container {
-    width: 100%;
-    max-width: 500px;
-    padding: 1.5rem;
+  width: 100%;
+  max-width: 500px;
+  padding: 1.5rem;
 }
 
 .p-8 {
-    padding: 3rem 2rem;
+  padding: 3rem 2rem;
 }
 
 .text-center {
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .matching-visuals {
-    position: relative;
-    width: 120px;
-    height: 120px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  position: relative;
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .pulse-circle {
-    position: relative;
-    z-index: 10;
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    background: rgba(30, 41, 59, 0.8);
-    border: 2px solid var(--accent-primary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+  position: relative;
+  z-index: 10;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: var(--bg-tertiary);
+  border: 2px solid var(--accent-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
 }
 
 .pulse-ring {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    border-radius: 50%;
-    border: 1px solid var(--accent-primary);
-    opacity: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 1px solid var(--accent-primary);
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 0;
+  animation: ripple 2s linear infinite;
 }
 
 .ring-1 {
-    width: 100px;
-    height: 100px;
-    animation: ripple 2s linear infinite;
+  animation-delay: 0s;
 }
 
 .ring-2 {
-    width: 120px;
-    height: 120px;
-    animation: ripple 2s linear infinite;
-    animation-delay: 1s;
+  animation-delay: 1s;
 }
 
 @keyframes ripple {
-    0% {
-        width: 80px;
-        height: 80px;
-        opacity: 0.8;
-    }
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.8;
+  }
 
-    100% {
-        width: 200px;
-        height: 200px;
-        opacity: 0;
-    }
+  100% {
+    transform: translate(-50%, -50%) scale(2.25);
+    opacity: 0;
+  }
 }
 
 .matching-title {
-    font-size: 2rem;
-    margin: 0;
+  color: var(--text-primary);
+  font-size: 2rem;
+  margin: 0;
 }
 
 .matching-details {
-    background: rgba(15, 23, 42, 0.4);
-    padding: 1.5rem;
-    border-radius: var(--radius-lg);
-    width: 100%;
+  background: rgba(15, 23, 42, 0.4);
+  padding: 1.5rem;
+  border-radius: var(--radius-lg);
+  width: 100%;
 }
 
 .detail-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .detail-label {
-    color: var(--text-secondary);
-    font-weight: 500;
+  color: var(--text-secondary);
+  font-weight: 500;
 }
 
 .detail-value {
-    text-transform: capitalize;
+  text-transform: capitalize;
 }
 
 .font-mono {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 .matching-timer {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .timer-text {
-    font-size: 3rem;
-    font-weight: 700;
-    color: var(--accent-primary);
-    line-height: 1;
-    text-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--accent-primary);
+  line-height: 1;
+  text-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
 }
 
 .timer-subtext {
-    color: var(--text-muted);
-    font-size: 0.875rem;
+  color: var(--text-muted);
+  font-size: 0.875rem;
 }
 
 .mt-2 {
-    margin-top: 0.5rem;
+  margin-top: 0.5rem;
 }

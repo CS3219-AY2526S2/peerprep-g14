@@ -12,6 +12,13 @@ export default defineConfig({
     host: true,
     port: 5173,
     strictPort: true,
+    proxy: {
+      '/api': {
+        target: 'http://localhost',
+        changeOrigin: true,
+        secure: false,
+      }
+    }
   },
   // plugins: [
   //   react({

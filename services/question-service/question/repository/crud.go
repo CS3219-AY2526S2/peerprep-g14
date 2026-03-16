@@ -11,10 +11,13 @@ import (
 	"time"
 
 	// "github.com/tgonet/peerprep-g14/services/question-service/internal/database"
+	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	// "go.mongodb.org/mongo-driver/v2/mongo"
 	// "golang.org/x/text/cases"
 )
+
+type QuestionService struct{}
 
 var quest_col string = "question_collection"
 var test_col string = "testcase_collection"
@@ -52,12 +55,13 @@ func NewTopicStore() *TopicStore {
     }
 }
 
-type question struct {
-	Question_title       string		//`bson:"question_title,omitempty"`
-	Question_description string		//`bson:"question_description,omitempty"`
-	Difficulty_level     string		//`bson:"difficulty_level,omitempty"`
-	Related_topic        []string	//`bson:"related_topic,omitempty"`
-	Created_at           string
+type Question struct {
+	ID          bson.ObjectID   `json:"_id,omitempty" bson:"_id,omitempty"`
+	Title       string   `json:"title" bson:"Title"`
+	Description string   `json:"description" bson:"Description"`
+	Difficulty  string   `json:"difficulty" bson:"Difficulty"`
+	Topics      []string `json:"topics" bson:"Topics"`
+	CreatedAt   string   `json:"createdAt" bson:"CreatedAt"`
 	// image_url
 }
 
@@ -105,50 +109,175 @@ func validateTopics(input []string, ts *TopicStore) ([]string, error) {
     return result, nil
 }
 
-func initQuestion() question{
-	var quest_struct question
-	quest_struct.Question_title = ""
-	quest_struct.Question_description = ""
-	quest_struct.Difficulty_level = ""
-	quest_struct.Related_topic = []string{}
-	quest_struct.Created_at = ""
+func initQuestion() Question{
+	var quest_struct Question
+	quest_struct.Title = ""
+	quest_struct.Description = ""
+	quest_struct.Difficulty = ""
+	quest_struct.Topics = []string{}
+	quest_struct.CreatedAt = ""
 	return quest_struct
 }
 
-func CreateQuestion(title *string, desc *string, diff string, topics []string, client *mongo.Client) {
+func (q *QuestionService) CreateQuestion(title *string, desc *string, diff string, topics []string, client *mongo.Client) (any, error) {
 	doc := initQuestion()
 	topicstore := NewTopicStore()
 	// validateTitle(title)
 	validatedLevel, err := validateDifficulty(diff)
 	if err != nil {
 		fmt.Println("Validation Error:", err)
-        return // Stop execution if the difficulty is invalid
+        return nil, err// Stop execution if the difficulty is invalid
     }
 
 	validatedTopics, err := validateTopics(topics, topicstore)
 	if err != nil {
 		fmt.Println("Validation Error:", err)
-        return // Stop execution if the difficulty is invalid
+        return nil, err// Stop execution if the difficulty is invalid
     }
 
-	doc.Question_title = *title
-	doc.Question_description = *desc
-	doc.Difficulty_level = validatedLevel
-	doc.Related_topic = validatedTopics
-	doc.Created_at = time.Now().Format(time.DateTime)
+	doc.Title = *title
+	doc.Description = *desc
+	doc.Difficulty = validatedLevel
+	doc.Topics = validatedTopics
+	doc.CreatedAt = time.Now().Format(time.DateTime)
 	
 	fmt.Printf("Inserting: \n")
-	fmt.Printf("Title: %s\n", doc.Question_title)
-	fmt.Printf("Desc: %s\n", doc.Question_description)
-	fmt.Printf("Diff: %s\n", doc.Difficulty_level)
-	fmt.Printf("Topics: %s\n", doc.Related_topic)
-	fmt.Printf("createdAt: %s\n", doc.Created_at)
+	fmt.Printf("Title: %s\n", doc.Title)
+	fmt.Printf("Desc: %s\n", doc.Description)
+	fmt.Printf("Diff: %s\n", doc.Difficulty)
+	fmt.Printf("Topics: %s\n", doc.Topics)
+	fmt.Printf("createdAt: %s\n", doc.CreatedAt)
 
 	// client := database.ConnectMongo()
-	question_coll := client.Database("questionTestcaseDB").Collection(quest_col)
-	result, err := question_coll.InsertOne(context.TODO(), doc)
+	questionColl := client.Database("questionTestcaseDB").Collection(quest_col)
+	result, err := questionColl.InsertOne(context.TODO(), doc)
 	if err != nil {
-		panic(err)
+		// panic(err)
+		return nil, err
 	}
 	fmt.Printf("Inserted document with _id: %v\n", result.InsertedID)
+	return result.InsertedID, nil
+}
+
+func (q *QuestionService) GetQuestions(difficulty string, topic string, client *mongo.Client) ([]Question, error) {
+	questionColl := client.Database("questionTestcaseDB").Collection(quest_col)
+
+	filter := bson.M{}
+	if difficulty != "" {
+		filter["Difficulty"] = difficulty
+	}
+	if topic != "" {
+		filter["Topics"] = topic
+	}
+
+	cursor, err := questionColl.Find(context.TODO(), filter)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(context.TODO())
+
+	var questions []Question // initialize as nil slice, Find will append
+	if err = cursor.All(context.TODO(), &questions); err != nil {
+		return nil, err
+	}
+
+	if questions == nil {
+		questions = []Question{}
+	}
+
+	return questions, nil
+}
+
+func (q *QuestionService) GetQuestionByID(id string, client *mongo.Client) (*Question, error) {
+	questionColl := client.Database("questionTestcaseDB").Collection(quest_col)
+
+	objID, err := bson.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, fmt.Errorf("invalid ID format")
+	}
+
+	var result Question
+	err = questionColl.FindOne(context.TODO(), bson.M{"_id": objID}).Decode(&result)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, fmt.Errorf("question not found")
+		}
+		return nil, err
+	}
+
+	return &result, nil
+}
+
+func (q *QuestionService) UpdateQuestion(id string, title *string, desc *string, diff string, topics []string, client *mongo.Client) error {
+	questionColl := client.Database("questionTestcaseDB").Collection(quest_col)
+
+	objID, err := bson.ObjectIDFromHex(id)
+	if err != nil {
+		return fmt.Errorf("invalid ID format")
+	}
+
+	topicstore := NewTopicStore()
+	validatedLevel, err := validateDifficulty(diff)
+	if err != nil {
+		return err
+	}
+
+	validatedTopics, err := validateTopics(topics, topicstore)
+	if err != nil {
+		return err
+	}
+
+	update := bson.M{
+		"$set": bson.M{
+			"Title":       *title,
+			"Description": *desc,
+			"Difficulty":  validatedLevel,
+			"Topics":      validatedTopics,
+		},
+	}
+
+	result, err := questionColl.UpdateOne(context.TODO(), bson.M{"_id": objID}, update)
+	if err != nil {
+		return err
+	}
+	if result.MatchedCount == 0 {
+		return fmt.Errorf("question not found")
+	}
+
+	return nil
+}
+
+func (q *QuestionService) DeleteQuestion(id string, client *mongo.Client) error {
+	questionColl := client.Database("questionTestcaseDB").Collection(quest_col)
+
+	objID, err := bson.ObjectIDFromHex(id)
+	if err != nil {
+		return fmt.Errorf("invalid ID format")
+	}
+
+	result, err := questionColl.DeleteOne(context.TODO(), bson.M{"_id": objID})
+	if err != nil {
+		return err
+	}
+	if result.DeletedCount == 0 {
+		return fmt.Errorf("question not found")
+	}
+
+	return nil
+}
+
+func (q *QuestionService) QueryAllQuestions(client *mongo.Client) ([]Question, error) {
+	questionColl := client.Database("questionTestcaseDB").Collection(quest_col)
+
+	var questionList []Question
+
+	cursor, err := questionColl.Find(context.TODO(), bson.D{})
+	if err != nil {
+		return nil, err
+	}
+
+	if err := cursor.All(context.TODO(), &questionList); err != nil {
+		return nil, err
+	}
+	return questionList, nil
 }
