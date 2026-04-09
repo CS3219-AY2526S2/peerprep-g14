@@ -8,9 +8,8 @@ import { useAuth } from "../context/AuthContext";
 import {
   cancelMatchRequest,
   disconnectMatchRequestKeepalive,
-  getActiveMatchRequest,
-  getLatestMatchRequest,
   getMatchRequest,
+  getResumeMatchRequest,
   reconnectMatchRequest,
 } from "../api/matching";
 import { getEffectiveMatchingUserId } from "../dev/matchingDevUser";
@@ -101,35 +100,30 @@ export const Matching: React.FC = () => {
 
     let cancelled = false;
     const recover = async () => {
-      const active = await getActiveMatchRequest(effectiveUserId);
+      const active = await getResumeMatchRequest(effectiveUserId);
       if (cancelled) return;
       if (active.ok) {
         setActiveMatchRequestId(active.data.id);
         setRequestId(active.data.id);
-        return;
-      }
-      const latest = await getLatestMatchRequest(effectiveUserId);
-      if (cancelled) return;
-      if (latest.ok) {
-        const d = latest.data;
-        if (d.status === "RECONNECT_EXPIRED") {
+        if (active.data.status === "RECONNECT_EXPIRED") {
           clearActiveMatchRequestId();
           showTerminal(
             "reconnect",
-            d.message ??
+            active.data.message ??
               "Your previous match request expired while disconnected. Please start a new search.",
           );
           return;
         }
-        if (d.status === "TIMED_OUT") {
+        if (active.data.status === "TIMED_OUT") {
           clearActiveMatchRequestId();
           showTerminal(
             "timeout",
-            d.message ??
+            active.data.message ??
               "No match was found in time. You can try again from the dashboard.",
           );
           return;
         }
+        return;
       }
       navigate("/user/dashboard", { replace: true });
     };
@@ -157,31 +151,29 @@ export const Matching: React.FC = () => {
       if (cancelled) return;
 
       if (!initial.ok) {
-        const fallback = await getActiveMatchRequest(effectiveUserId);
+        const fallback = await getResumeMatchRequest(effectiveUserId);
         if (cancelled) return;
         if (fallback.ok) {
+          if (fallback.data.status === "RECONNECT_EXPIRED") {
+            clearActiveMatchRequestId();
+            showTerminal(
+              "reconnect",
+              fallback.data.message ??
+                "Your previous match request expired while disconnected. Please start a new search.",
+            );
+            return;
+          }
+          if (fallback.data.status === "TIMED_OUT") {
+            clearActiveMatchRequestId();
+            showTerminal(
+              "timeout",
+              fallback.data.message ??
+                "No match was found in time. You can try again from the dashboard.",
+            );
+            return;
+          }
           setActiveMatchRequestId(fallback.data.id);
           setRequestId(fallback.data.id);
-          return;
-        }
-        const latest = await getLatestMatchRequest(effectiveUserId);
-        if (cancelled) return;
-        if (latest.ok && latest.data.status === "RECONNECT_EXPIRED") {
-          clearActiveMatchRequestId();
-          showTerminal(
-            "reconnect",
-            latest.data.message ??
-              "Your previous match request expired while disconnected. Please start a new search.",
-          );
-          return;
-        }
-        if (latest.ok && latest.data.status === "TIMED_OUT") {
-          clearActiveMatchRequestId();
-          showTerminal(
-            "timeout",
-            latest.data.message ??
-              "No match was found in time. You can try again from the dashboard.",
-          );
           return;
         }
         clearActiveMatchRequestId();

@@ -354,6 +354,45 @@ export async function getLatestMatchRequest(
   return { ok: false, status: res.status, message };
 }
 
+export async function getResumeMatchRequest(
+  effectiveUserId: string | null,
+): Promise<
+  | { ok: true; data: MatchRequestResponse }
+  | { ok: false; status: number; message: string }
+> {
+  const base = getMatchingServiceBaseUrl();
+  const url = `${base}/matching/requests/resume`;
+
+  let res: Response;
+  try {
+    res = await fetch(
+      url,
+      matchingFetchInit(effectiveUserId, { method: "GET" }),
+    );
+  } catch (e) {
+    const hint = e instanceof Error ? e.message : "Network error";
+    return {
+      ok: false,
+      status: 0,
+      message: `Cannot reach matching service (${hint})`,
+    };
+  }
+
+  if (res.ok) {
+    const data = (await res.json()) as MatchRequestResponse;
+    return { ok: true, data };
+  }
+
+  let message = res.statusText;
+  try {
+    const err = (await res.json()) as { error?: string };
+    if (err.error) message = err.error;
+  } catch {
+    /* ignore */
+  }
+  return { ok: false, status: res.status, message };
+}
+
 export async function cancelMatchRequest(
   effectiveUserId: string | null,
   requestId: string,

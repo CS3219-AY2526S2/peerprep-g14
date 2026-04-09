@@ -10,6 +10,7 @@ import {
   getActiveMatchRequestForUser,
   getLatestMatchRequestForUser,
   getMatchRequestForUser,
+  getResumeMatchRequestForUser,
   reconnectMatchRequestForUser,
 } from "../services/matchRequestService.js";
 import { requireUserId } from "../middleware/requireUserId.js";
@@ -77,6 +78,24 @@ router.get(
       const row = await getLatestMatchRequestForUser(userId);
       if (!row) {
         res.status(404).json({ error: "No recent match request" });
+        return;
+      }
+      res.status(200).json(row);
+    } catch (e) {
+      sendServerError(res, e);
+    }
+  },
+);
+
+router.get(
+  "/requests/resume",
+  requireUserId,
+  async (req: Request, res: Response) => {
+    const userId = req.userId!;
+    try {
+      const row = await getResumeMatchRequestForUser(userId);
+      if (!row) {
+        res.status(404).json({ error: "No resumable match request" });
         return;
       }
       res.status(200).json(row);

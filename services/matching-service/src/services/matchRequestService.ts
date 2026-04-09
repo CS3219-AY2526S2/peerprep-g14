@@ -400,6 +400,71 @@ export async function getLatestMatchRequestForUser(
   return row ? toDTO(asMatchRow(row)) : null;
 }
 
+export async function getResumeMatchRequestForUser(
+  userId: string,
+): Promise<MatchRequestDTO | null> {
+  await tryMatchQueueAndPublish();
+
+  const latest = await prisma.matchRequest.findFirst({
+    where: {
+      userId,
+      status: {
+        in: ["PENDING", "TIMED_OUT", "RECONNECT_EXPIRED"],
+      },
+    } as MRWhere,
+    orderBy: { createdAt: "desc" },
+  });
+  if (!latest) return null;
+  const row = asMatchRow(latest);
+
+  if (row.status !== "PENDING" || row.disconnectedAt === null) {
+    return toDTO(row);
+  }
+
+  const now = new Date();
+  const deadlineMs = row.reconnectDeadlineAt?.getTime() ?? null;
+  const graceExpired = deadlineMs !== null && deadlineMs <= now.getTime();
+
+  if (graceExpired) {
+    await prisma.matchRequest.updateMany({
+      where: {
+        id: row.id,
+        userId,
+        status: "PENDING",
+        disconnectedAt: { not: null },
+        reconnectDeadlineAt: { lte: now },
+      } as MRWhere,
+      data: {
+        status: "RECONNECT_EXPIRED",
+        disconnectedAt: null,
+        reconnectDeadlineAt: null,
+      } as unknown as MRUpdateManyData,
+    });
+  } else {
+    await prisma.matchRequest.updateMany({
+      where: {
+        id: row.id,
+        userId,
+        status: "PENDING",
+        disconnectedAt: { not: null },
+        OR: [
+          { reconnectDeadlineAt: null },
+          { reconnectDeadlineAt: { gt: now } },
+        ],
+      } as unknown as MRWhere,
+      data: {
+        disconnectedAt: null,
+        reconnectDeadlineAt: null,
+      } as MRUpdateManyData,
+    });
+  }
+
+  const refreshed = await prisma.matchRequest.findFirst({
+    where: { id: row.id, userId } as MRWhere,
+  });
+  return refreshed ? toDTO(asMatchRow(refreshed)) : null;
+}
+
 export async function disconnectMatchRequestForUser(
   id: string,
   userId: string,
