@@ -25,6 +25,13 @@ export type MatchRequestCancelledPayload = {
   occurredAt: string;
 };
 
+export type MatchRequestDisconnectedPayload = {
+  eventType: "match.request.disconnected";
+  requestId: string;
+  userId: string;
+  occurredAt: string;
+};
+
 export type MatchFoundEventPayload = {
   eventType: "match.found";
   matchId: string;
@@ -127,6 +134,25 @@ export async function publishMatchRequestCancelled(
     });
   } catch (e) {
     logPublishFailure("match.request.cancelled", e);
+  }
+}
+
+export async function publishMatchRequestDisconnected(
+  requestId: string,
+  userId: string,
+): Promise<void> {
+  const payload: MatchRequestDisconnectedPayload = {
+    eventType: "match.request.disconnected",
+    requestId,
+    userId,
+    occurredAt: new Date().toISOString(),
+  };
+  try {
+    await publishToMatchingExchange("match.request.disconnected", {
+      ...payload,
+    });
+  } catch (e) {
+    logPublishFailure("match.request.disconnected", e);
   }
 }
 

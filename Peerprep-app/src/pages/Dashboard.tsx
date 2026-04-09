@@ -6,50 +6,58 @@ import { Button } from "../components/Button";
 import "./Dashboard.css";
 import Card from "../components/Card";
 import { useAuth } from "../context/AuthContext";
-import { createMatchRequest } from "../api/matching";
+import { createMatchRequest, getActiveMatchRequest } from "../api/matching";
 import { getEffectiveMatchingUserId } from "../dev/matchingDevUser";
 import { setActiveMatchRequestId } from "../matching/matchingSession";
-import {
-  loadMatchFormDraft,
-  saveMatchFormDraft,
-} from "../matching/matchFormDraft";
 
 export const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { userId, isLoading } = useAuth();
-  const [difficulty, setDifficulty] = useState(
-    () => loadMatchFormDraft()?.difficulty ?? "",
-  );
-  const [topic, setTopic] = useState(() => loadMatchFormDraft()?.topic ?? "");
-  const [programmingLanguage, setProgrammingLanguage] = useState(
-    () => loadMatchFormDraft()?.programmingLanguage ?? "",
-  );
-  const [allowLowerDifficultyMatch, setAllowLowerDifficultyMatch] = useState(
-    () => loadMatchFormDraft()?.allowLowerDifficultyMatch ?? false,
-  );
+  const [difficulty, setDifficulty] = useState("");
+  const [topic, setTopic] = useState("");
+  const [programmingLanguage, setProgrammingLanguage] = useState("");
+  const [allowLowerDifficultyMatch, setAllowLowerDifficultyMatch] = useState(false);
   /** "" = no preference (F2 — omit from payload) */
-  const [timeAvailable, setTimeAvailable] = useState(
-    () => loadMatchFormDraft()?.timeAvailable ?? "",
-  );
+  const [timeAvailable, setTimeAvailable] = useState("");
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [checkingActiveRequest, setCheckingActiveRequest] = useState(true);
   const dashboardTheme = "user";
 
   useEffect(() => {
-    saveMatchFormDraft({
-      topic,
-      difficulty,
-      programmingLanguage,
-      allowLowerDifficultyMatch,
-      timeAvailable,
-    });
-  }, [
-    topic,
-    difficulty,
-    programmingLanguage,
-    allowLowerDifficultyMatch,
-    timeAvailable,
-  ]);
+    if (isLoading) {
+      setCheckingActiveRequest(true);
+      return;
+    }
+    const effectiveId = getEffectiveMatchingUserId(userId);
+    if (!effectiveId) {
+      setCheckingActiveRequest(false);
+      return;
+    }
+
+    let cancelled = false;
+    const ensureNoActiveRequest = async () => {
+      const active = await getActiveMatchRequest(effectiveId);
+      if (cancelled) return;
+      if (active.ok) {
+        setActiveMatchRequestId(active.data.id);
+        navigate("/matching", {
+          replace: true,
+          state: { requestId: active.data.id },
+        });
+        return;
+      }
+      setCheckingActiveRequest(false);
+    };
+    void ensureNoActiveRequest();
+    return () => {
+      cancelled = true;
+    };
+  }, [isLoading, userId, navigate]);
+
+  if (checkingActiveRequest) {
+    return null;
+  }
 
   const handleStartMatching = async () => {
     setSubmitError(null);

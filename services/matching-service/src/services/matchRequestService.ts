@@ -15,6 +15,7 @@ import {
   publishMatchQueueEffects,
   publishMatchRequestCancelled,
   publishMatchRequestCreated,
+  publishMatchRequestDisconnected,
   type MatchFoundEventPayload,
 } from "../messaging/matchingDomainEvents.js";
 import {
@@ -375,6 +376,30 @@ export async function getMatchRequestForUser(
   return row ? toDTO(asMatchRow(row)) : null;
 }
 
+export async function getActiveMatchRequestForUser(
+  userId: string,
+): Promise<MatchRequestDTO | null> {
+  await tryMatchQueueAndPublish();
+
+  const row = await prisma.matchRequest.findFirst({
+    where: { userId, status: "PENDING" } as MRWhere,
+    orderBy: { createdAt: "desc" },
+  });
+  return row ? toDTO(asMatchRow(row)) : null;
+}
+
+export async function getLatestMatchRequestForUser(
+  userId: string,
+): Promise<MatchRequestDTO | null> {
+  await tryMatchQueueAndPublish();
+
+  const row = await prisma.matchRequest.findFirst({
+    where: { userId } as MRWhere,
+    orderBy: { createdAt: "desc" },
+  });
+  return row ? toDTO(asMatchRow(row)) : null;
+}
+
 export async function disconnectMatchRequestForUser(
   id: string,
   userId: string,
@@ -438,6 +463,7 @@ export async function disconnectMatchRequestForUser(
   if (!refreshed) {
     return { ok: false, code: "NOT_FOUND" };
   }
+  await publishMatchRequestDisconnected(id, userId);
   await tryMatchQueueAndPublish();
   return { ok: true, data: toDTO(asMatchRow(refreshed)) };
 }

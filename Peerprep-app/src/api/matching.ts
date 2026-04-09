@@ -208,13 +208,26 @@ export function disconnectMatchRequestKeepalive(
   requestId: string,
 ): void {
   const base = getMatchingServiceBaseUrl();
-  const url = `${base}/matching/requests/${encodeURIComponent(requestId)}/disconnect`;
+  const rawUrl = `${base}/matching/requests/${encodeURIComponent(requestId)}/disconnect`;
+  const withUserQuery =
+    import.meta.env.DEV && effectiveUserId
+      ? `${rawUrl}?userId=${encodeURIComponent(effectiveUserId)}`
+      : rawUrl;
+
+  // Beacon is most reliable during tab close/navigation; dev user id goes via query.
+  if (typeof navigator !== "undefined" && typeof navigator.sendBeacon === "function") {
+    const body = new Blob(["{}"], { type: "text/plain;charset=UTF-8" });
+    if (navigator.sendBeacon(withUserQuery, body)) {
+      return;
+    }
+  }
+
   const headers = new Headers();
   headers.set("Content-Type", "application/json");
   if (import.meta.env.DEV && effectiveUserId) {
     headers.set("x-user-id", effectiveUserId);
   }
-  void fetch(url, {
+  void fetch(withUserQuery, {
     method: "POST",
     headers,
     body: "{}",
@@ -232,6 +245,84 @@ export async function getMatchRequest(
 > {
   const base = getMatchingServiceBaseUrl();
   const url = `${base}/matching/requests/${encodeURIComponent(requestId)}`;
+
+  let res: Response;
+  try {
+    res = await fetch(
+      url,
+      matchingFetchInit(effectiveUserId, { method: "GET" }),
+    );
+  } catch (e) {
+    const hint = e instanceof Error ? e.message : "Network error";
+    return {
+      ok: false,
+      status: 0,
+      message: `Cannot reach matching service (${hint})`,
+    };
+  }
+
+  if (res.ok) {
+    const data = (await res.json()) as MatchRequestResponse;
+    return { ok: true, data };
+  }
+
+  let message = res.statusText;
+  try {
+    const err = (await res.json()) as { error?: string };
+    if (err.error) message = err.error;
+  } catch {
+    /* ignore */
+  }
+  return { ok: false, status: res.status, message };
+}
+
+export async function getActiveMatchRequest(
+  effectiveUserId: string | null,
+): Promise<
+  | { ok: true; data: MatchRequestResponse }
+  | { ok: false; status: number; message: string }
+> {
+  const base = getMatchingServiceBaseUrl();
+  const url = `${base}/matching/requests/active`;
+
+  let res: Response;
+  try {
+    res = await fetch(
+      url,
+      matchingFetchInit(effectiveUserId, { method: "GET" }),
+    );
+  } catch (e) {
+    const hint = e instanceof Error ? e.message : "Network error";
+    return {
+      ok: false,
+      status: 0,
+      message: `Cannot reach matching service (${hint})`,
+    };
+  }
+
+  if (res.ok) {
+    const data = (await res.json()) as MatchRequestResponse;
+    return { ok: true, data };
+  }
+
+  let message = res.statusText;
+  try {
+    const err = (await res.json()) as { error?: string };
+    if (err.error) message = err.error;
+  } catch {
+    /* ignore */
+  }
+  return { ok: false, status: res.status, message };
+}
+
+export async function getLatestMatchRequest(
+  effectiveUserId: string | null,
+): Promise<
+  | { ok: true; data: MatchRequestResponse }
+  | { ok: false; status: number; message: string }
+> {
+  const base = getMatchingServiceBaseUrl();
+  const url = `${base}/matching/requests/latest`;
 
   let res: Response;
   try {
