@@ -1,0 +1,134 @@
+Images space usage:
+
+REPOSITORY                             TAG       IMAGE ID       CREATED          SIZE      SHARED SIZE   UNIQUE SIZE   CONTAINERS
+peerprep-g14-frontend                  latest    f1b7fc40d900   39 minutes ago   634MB     0B            634.4MB       1
+peerprep-g14-user-service              latest    18af13c6c6b1   39 minutes ago   1.41GB    171.9MB       1.237GB       1
+peerprep-g14-auth-service              latest    dc191aad78d2   3 hours ago      387MB     171.9MB       214.9MB       1
+peerprep-g14-question-service          latest    cc5998327034   17 hours ago     65.1MB    0B            65.08MB       1
+nginx                                  alpine    1d13701a5f9f   5 weeks ago      91.7MB    9.359MB       82.34MB       1
+public.ecr.aws/supabase/edge-runtime   v1.67.4   358930e39ff3   11 months ago    973MB     0B            972.8MB       0
+
+Containers space usage:
+
+CONTAINER ID   IMAGE                           COMMAND                  LOCAL VOLUMES   SIZE      CREATED          STATUS          NAMES
+7525393e3f72   nginx:alpine                    "/docker-entrypoint.…"   0               81.9kB    39 minutes ago   Up 39 minutes   peerprep-g14-gateway-1
+a6d1176df423   peerprep-g14-question-service   "/question-service"      0               4.1kB     39 minutes ago   Up 39 minutes   peerprep-g14-question-service-1
+68bdb3ccbbdd   peerprep-g14-frontend           "docker-entrypoint.s…"   0               11.8MB    39 minutes ago   Up 39 minutes   peerprep-g14-frontend-1
+17ec31d724e6   peerprep-g14-user-service       "docker-entrypoint.s…"   0               94.2kB    39 minutes ago   Up 39 minutes   peerprep-g14-user-service-1
+7a43019b2fc2   peerprep-g14-auth-service       "docker-entrypoint.s…"   0               45.1kB    39 minutes ago   Up 39 minutes   peerprep-g14-auth-service-1
+
+Local Volumes space usage:
+
+VOLUME NAME                      LINKS     SIZE
+supabase_edge_runtime_TutorLah   0         18.09MB
+
+Build cache usage: 15.24GB
+
+CACHE ID       CACHE TYPE        SIZE      CREATED          LAST USED        USAGE     SHARED
+nv8p96rbjw32   regular           4.2MB     6 days ago       6 days ago       1         true
+y214k0hap4dk   regular           210MB     6 days ago       6 days ago       1         true
+iclm39yj0o5o   regular           6.75MB    6 days ago       6 days ago       1         true
+pevwsznozs2d   regular           13.6MB    6 days ago       6 days ago       1         true
+miql86tebm8b   regular           206MB     6 days ago       6 days ago       1         true
+71k81nw23w6q   regular           6.75MB    6 days ago       6 days ago       1         true
+lutryraqwaev   regular           126kB     6 days ago       6 days ago       1         false
+re3q92qh1kih   regular           92.9MB    6 days ago       6 days ago       1         false
+vl1wktae8787   regular           144kB     6 days ago       6 days ago       1         false
+gxdqx3tpfmh7   regular           8.29kB    6 days ago       6 days ago       1         true
+yp2xjd74ryxc   regular           20.9kB    6 days ago       6 days ago       1         true
+kfobjse8zxtg   regular           158kB     6 days ago       6 days ago       1         false
+az6dfkoiuokn   regular           196MB     6 days ago       6 days ago       1         false
+vgmbyfdw16y6   regular           192MB     6 days ago       6 days ago       1         false
+ocunqpc0oyuh   regular           693MB     6 days ago       6 days ago       1         false
+kbad56gxo24e   regular           16.5kB    6 days ago       6 days ago       1         true
+uhyz9izm2kdc   regular           173kB     6 days ago       6 days ago       1         false
+s1k0gu0owf4q   regular           231kB     6 days ago       6 days ago       1         false
+wv3ih94mk9kc   regular           20.9kB    6 days ago       6 days ago       1         true
+kbjyr4g28esq   regular           126kB     5 days ago       5 days ago       1         false
+agnk2ns8pyo9   regular           92.9MB    5 days ago       5 days ago       1         false
+kbtqj3hibocq   regular           158kB     5 days ago       5 days ago       1         false
+1xt7x8mvzqvb   regular           173kB     5 days ago       5 days ago       1         false
+jrv4mjowgflk   regular           428MB     5 days ago       5 days ago       1         false
+z0dpfvnw3qfx   regular           201MB     5 days ago       5 days ago       2         false
+0r5781l9w65c   regular           693MB     5 days ago       5 days ago       2         false
+dpprrat968r6   regular           64.1MB    5 days ago       4 days ago       3         false
+vdzu2bhtt24t   regular           440MB     5 days ago       4 days ago       2         false
+9nwoxcq8ixh0   regular           196MB     5 days ago       4 days ago       2         false
+lt87dey596s4   regular           201MB     4 days ago       4 days ago       1         false
+mnag939syr75   regular           202MB     3 days ago       3 days ago       1         false
+il51jzw1gk4w   regular           440MB     3 days ago       3 days ago       1         false
+nvx40w4xh0hd   regular           440MB     3 days ago       3 days ago       1         false
+x17x7qvmrtp6   regular           64.1MB    3 days ago       3 days ago       3         false
+pevddsfjw0tj   regular           203MB     3 days ago       3 days ago       2         false
+hilq31p7ohlx   regular           12MB      3 days ago       3 days ago       2         false
+yt9ldwtswc01   regular           92.9MB    3 days ago       3 days ago       1         false
+mg81erfvl8ym   regular           64.1MB    3 days ago       3 days ago       1         false
+lrf6c77j3u35   regular           126kB     3 days ago       3 days ago       1         false
+b4lj8f6nkb3w   regular           158kB     3 days ago       3 days ago       1         false
+jsmipo76dvnx   regular           196MB     3 days ago       3 days ago       1         false
+61b7st3pnobn   regular           203MB     3 days ago       3 days ago       1         false
+olb18uipznay   regular           693MB     3 days ago       3 days ago       1         false
+wav08zaifc3o   regular           12MB      3 days ago       3 days ago       1         false
+xoayifie7bzb   regular           173kB     3 days ago       3 days ago       1         false
+6dbul7r7h6eo   regular           440MB     3 days ago       3 days ago       1         false
+cffx34g5ppx5   regular           64.1MB    27 hours ago     27 hours ago     1         false
+osjvu067f5xc   regular           203MB     27 hours ago     27 hours ago     1         false
+pqozi93py1i4   regular           440MB     27 hours ago     27 hours ago     1         false
+gn4u3dogdnl4   regular           12MB      27 hours ago     27 hours ago     1         false
+s48dk0r9yxbp   regular           92.9MB    23 hours ago     23 hours ago     1         false
+jj5dsvt1e4uc   regular           64.1MB    23 hours ago     23 hours ago     1         false
+l0m88o0d9x1l   regular           126kB     23 hours ago     23 hours ago     1         false
+luzlfmje20yv   regular           158kB     23 hours ago     23 hours ago     1         false
+92u085u1jros   regular           203MB     23 hours ago     23 hours ago     1         false
+n0gaqj3x51af   regular           196MB     23 hours ago     23 hours ago     1         false
+i88ym6k4987o   regular           693MB     23 hours ago     23 hours ago     1         false
+uxlgz2a4vvci   regular           440MB     23 hours ago     23 hours ago     1         false
+pbtgmtv6c4rm   regular           12MB      23 hours ago     23 hours ago     1         false
+ug653egf1ty3   regular           173kB     23 hours ago     23 hours ago     1         false
+apr264j44m2e   regular           1.78MB    17 hours ago     17 hours ago     1         false
+99yaj0hi13b4   regular           349MB     17 hours ago     17 hours ago     1         false
+r7hwdq646p3l   regular           16.5kB    17 hours ago     17 hours ago     1         false
+8e0bzoj1o41d   regular           126kB     17 hours ago     17 hours ago     1         true
+d7rjou3ub0ok   regular           64.1MB    17 hours ago     17 hours ago     1         false
+z3ivtkrg0eml   regular           196MB     17 hours ago     17 hours ago     1         false
+xfh9bcsb3kao   regular           158kB     17 hours ago     17 hours ago     1         false
+z5pygo82o7sh   regular           173kB     17 hours ago     17 hours ago     1         false
+ra4wppa477nc   regular           440MB     17 hours ago     17 hours ago     1         false
+z2cv06rmvuux   regular           12MB      17 hours ago     17 hours ago     1         false
+slb81nhffzwy   regular           693MB     17 hours ago     17 hours ago     1         false
+9gano3raoo6j   regular           24.6kB    17 hours ago     17 hours ago     1         false
+innps6uqeae9   regular           301MB     17 hours ago     17 hours ago     1         false
+g6kwnsjarbeq   regular           4.13kB    17 hours ago     17 hours ago     1         false
+9x17aa4shy5k   regular           81.9kB    17 hours ago     17 hours ago     1         false
+yre1ld0j1t6q   regular           13MB      17 hours ago     17 hours ago     1         true
+wg7p6l9qwt6b   regular           8.19kB    17 hours ago     17 hours ago     1         false
+ny58hboz2sxx   regular           52.1MB    17 hours ago     17 hours ago     1         true
+rkbvlci4004z   regular           92.9MB    17 hours ago     3 hours ago      2         true
+y6qxsaxb2l9j   regular           173kB     3 hours ago      3 hours ago      1         false
+6c2q43s5ob3a   regular           454MB     3 hours ago      3 hours ago      1         false
+s8x7zteth50s   regular           301MB     3 hours ago      3 hours ago      1         false
+ph6cjx6vgt72   regular           304MB     17 hours ago     3 hours ago      2         false
+bv0132zdwwlz   regular           102kB     3 hours ago      3 hours ago      1         false
+j8yl36644t9s   regular           203MB     17 hours ago     2 hours ago      3         false
+hok3etpk2ysd   regular           12MB      3 hours ago      2 hours ago      2         false
+wgw5xhw4ibjm   source.local      98.3kB    17 hours ago     39 minutes ago   4         false
+2sxb9x1pgm1n   regular           34.6MB    17 hours ago     39 minutes ago   4         true
+r7q7y1ahnbwf   source.local      4.1kB     17 hours ago     39 minutes ago   4         false
+pgfb15sxbgtc   source.local      8.19kB    17 hours ago     39 minutes ago   4         false
+iksz5ypffpgf   source.local      51.9MB    6 days ago       39 minutes ago   14        false
+m20hoj9hy1zo   regular           64.1MB    3 hours ago      39 minutes ago   3         true
+0vrepn7waxzq   source.local      4.1kB     6 days ago       39 minutes ago   14        false
+m59ycr69s6qp   source.local      8.19kB    6 days ago       39 minutes ago   14        false
+hd1acn7jxfki   source.local      8.19kB    6 days ago       39 minutes ago   14        false
+vo8w5ak59e76   regular           208MB     39 minutes ago   39 minutes ago   1         true
+kuii6ly155r0   regular           201MB     39 minutes ago   39 minutes ago   1         true
+1xwkw4amp6to   source.local      179MB     6 days ago       39 minutes ago   14        false
+1qumq6xy4i8d   regular           158kB     39 minutes ago   39 minutes ago   1         true
+s6zliqdsir41   source.local      4.1kB     6 days ago       39 minutes ago   14        false
+a715s7dbkkk7   source.local      4.1kB     6 days ago       39 minutes ago   14        false
+t0rk1n43l6rs   regular           713MB     3 hours ago      39 minutes ago   2         false
+54si4pytez4s   regular           12MB      39 minutes ago   39 minutes ago   1         false
+jp1x43gr5481   source.local      8.19kB    6 days ago       39 minutes ago   14        false
+gkqebce8q8dd   source.local      356MB     6 days ago       39 minutes ago   14        false
+w5xuq2xmxei3   regular           454MB     39 minutes ago   39 minutes ago   1         false
+p7qyo418ugbn   exec.cachemount   54.6MB    17 hours ago     39 minutes ago   4         false

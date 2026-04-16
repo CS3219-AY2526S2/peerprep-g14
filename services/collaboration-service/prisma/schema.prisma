@@ -1,0 +1,22 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Session {
+  id           String    @id @default(uuid())
+  user1Id      String    
+  user2Id      String    
+  questionId   String    
+  language     String
+  status       String    @default("active") // "active" | "terminated"
+  docState     Bytes?    // Serialized Y.Doc state
+  createdAt    DateTime  @default(now())
+  terminatedAt DateTime?
+  /// (deliberate, timeout, inactivity, etc.)
+  terminateReason String?
+  terminatedBy    String?
+}

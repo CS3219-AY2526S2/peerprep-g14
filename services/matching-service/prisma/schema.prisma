@@ -1,0 +1,51 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["partialIndexes"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum MatchRequestStatus {
+  PENDING
+  MATCHED
+  CANCELLED
+  TIMED_OUT
+  RECONNECT_EXPIRED
+}
+
+/// Set when status = MATCHED: same requested levels, or cross-level (downward from the harder requester’s perspective).
+enum MatchingPairType {
+  SAME_DIFFICULTY
+  DOWNWARD
+}
+
+/// Active pool = status PENDING; matching groups by (topic, programmingLanguage); difficulty handled in engine (F5).
+model MatchRequest {
+  id                        String              @id @default(uuid())
+  userId                    String
+  topic                     String
+  difficulty                String
+  programmingLanguage       String
+  allowLowerDifficultyMatch Boolean             @default(false)
+  /// F2 — optional preference only (30 / 45 / 60); null if not specified.
+  timeAvailableMinutes      Int?
+  status                    MatchRequestStatus  @default(PENDING)
+  peerUserId                String?
+  peerMatchRequestId        String?
+  /// Partner’s requested difficulty (easy | medium | hard) at match time; null until MATCHED.
+  peerRequestedDifficulty   String?
+  /// Partner’s time preference at match time; null until MATCHED or if peer omitted time.
+  peerTimeAvailableMinutes    Int?
+  matchingPairType          MatchingPairType?
+  /// F9 — set when client reports temporary disconnect; cleared on reconnect.
+  disconnectedAt            DateTime?
+  reconnectDeadlineAt       DateTime?
+  createdAt                 DateTime            @default(now())
+  updatedAt                 DateTime            @updatedAt
+
+  @@unique([userId], map: "MatchRequest_one_pending_per_user", where: { status: "PENDING" })
+  @@index([topic, programmingLanguage])
+  @@index([status, topic, programmingLanguage, difficulty])
+}

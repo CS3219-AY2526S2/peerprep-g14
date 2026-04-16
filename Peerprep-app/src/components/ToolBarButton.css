@@ -1,0 +1,54 @@
+.toolbar-button {
+  width: 50px;
+  height: 50px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: calc(var(--radius-md));
+  border: 1px solid rgb(var(--toolbar-button-accent-rgb) / 0.95);
+  background: rgb(var(--toolbar-button-primary-rgb) / 0.28);
+  color: var(--toolbar-button-text);
+  cursor: pointer;
+
+  box-shadow:
+    0 0 0 1px rgb(var(--toolbar-button-accent-rgb) / 0.08),
+    0 0 18px rgb(var(--toolbar-button-accent-rgb) / 0.12);
+
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.toolbar-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.toolbar-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.toolbar-button--user {
+  --toolbar-button-primary-rgb: var(--user-600-rgb);
+  --toolbar-button-accent-rgb: var(--user-400-rgb);
+  --toolbar-button-text: var(--user-200);
+}
+
+.toolbar-button--admin {
+  --toolbar-button-primary-rgb: var(--admin-600-rgb);
+  --toolbar-button-accent-rgb: var(--admin-400-rgb);
+  --toolbar-button-text: var(--admin-200);
+}
+
+.toolbar-button--neutral {
+  --toolbar-button-primary-rgb: var(--neutral-700-rgb);
+  --toolbar-button-accent-rgb: var(--neutral-400-rgb);
+  --toolbar-button-text: var(--neutral-200);
+}

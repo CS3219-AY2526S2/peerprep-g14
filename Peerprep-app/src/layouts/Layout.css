@@ -1,0 +1,19 @@
+.background-default {
+  min-height: 100vh;
+  width: 100%;
+
+  background: var(--neutral-950);
+}
+
+.page-shell {
+  --padding-border: 1.5rem;
+
+  min-height: 100vh;
+  width: 100%;
+  padding: var(--padding-border);
+  box-sizing: border-box;
+
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+}

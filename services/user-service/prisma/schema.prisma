@@ -1,0 +1,33 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id              String               @id @default(uuid())
+  email           String               @unique
+  name            String?
+  role            String               @default("USER")
+  password        String?
+  authProvider    String?
+  providerId      String?              @unique
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  bio             String?
+  experienceLevel String?
+  learningPurpose String[]             @default([])
+  profileImagePath String?
+  refreshTokens   User_refresh_token[]
+}
+
+model User_refresh_token {
+  id         String   @id @default(uuid())
+  userId     String
+  token_hash String   @unique
+  expire_at  DateTime
+  created_at DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

@@ -1,0 +1,15 @@
+node_modules
+dist
+.env
+
+# TypeScript incremental build cache (if enabled by tooling / IDE)
+*.tsbuildinfo
+
+# Prisma config build artifacts (source of truth is prisma.config.ts only)
+prisma.config.js
+prisma.config.js.map
+prisma.config.d.ts
+prisma.config.d.ts.map
+
+# Test coverage (if you add vitest/jest/c8 later)
+coverage

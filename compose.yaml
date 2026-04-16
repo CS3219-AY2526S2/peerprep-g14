@@ -1,0 +1,262 @@
+services:
+  # react-prod:
+  #     build:
+  #       context: ./
+  #       dockerfile: Dockerfile
+  #     image: docker-reactjs-sample
+  #     ports:
+  #       - "8080:8080"
+
+  # The Gateway is your entry point
+  gateway:
+    image: nginx:alpine
+    ports:
+      - "80:80" # You visit http://localhost in your browser
+    volumes:
+      - ./gateway/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - frontend
+      - user-service
+      - auth-service
+      - question-service
+      - matching-service
+      - code-execution-service
+      - ai-service
+
+  auth-service:
+    ports:
+      - "3000:3000"
+    build:
+      context: ./services/auth-service
+      dockerfile: Dockerfile.dev
+    tty: true
+    depends_on:
+      - user-service
+      - matching-service
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    volumes:
+      - ./services/auth-service/src:/usr/src/app/src
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./services/auth-service/src
+          target: /usr/src/app/src # Changed from /app to /usr/src/app/src
+        - action: rebuild
+          path: ./services/auth-service/package.json
+
+  # --- FRONTEND SERVICE ---
+  frontend:
+    ports:
+      - "5173:5173"
+    build:
+      context: ./Peerprep-app # Path to your frontend folder
+      dockerfile: Dockerfile.dev
+    develop:
+      watch:
+        - action: sync
+          path: ./Peerprep-app # Watch only frontend changes
+          target: /Peerprep-app
+        - action: sync
+          path: ./services/question-service # Watch only frontend changes
+          target: /Peerprep-app
+
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+
+  # --- USER SERVICE ---
+  user-service:
+    ports:
+      - "3001:3001"
+    build:
+      context: ./services/user-service # Path to your user service folder
+      dockerfile: Dockerfile.dev
+    tty: true
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    volumes:
+      - ./services/user-service/src:/usr/src/app/src
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./services/user-service/src
+          target: /usr/src/app/src # Changed from /app to /usr/src/app/src
+        - action: rebuild
+          path: ./services/user-service/package.json
+
+  rabbitmq:
+    image: rabbitmq:3-alpine
+    ports:
+      - "5672:5672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+
+  # --- MATCHING SERVICE ---
+  matching-service:
+    ports:
+      - "3003:3003"
+    build:
+      context: ./services/matching-service
+      dockerfile: Dockerfile.dev
+    tty: true
+    env_file:
+      - ./services/matching-service/.env
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3003/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 15s
+      timeout: 10s
+      retries: 3
+      start_period: 45s
+    volumes:
+      - ./services/matching-service/src:/usr/src/app/src
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./services/matching-service/src
+          target: /usr/src/app/src
+        - action: rebuild
+          path: ./services/matching-service/package.json
+
+  # --- SERVICE 3 (e.g., Question Service) ---
+  question-service:
+    ports:
+      - "3002:3002"
+    env_file:
+      - ./services/question-service/.env
+    platform: linux/amd64
+    build:
+      context: ./services/question-service
+      dockerfile: Dockerfile.prod #use Dockerfile.prod for production
+    depends_on:
+      - auth-service # if it depends on auth
+    restart: on-failure
+    volumes:
+      - ./services/question-service:/app
+    develop:
+      watch:
+        - action: sync
+          path: ./services/question-service
+          target: /app
+    # image: golang
+    # develop:
+    #   watch:
+    #     - action: sync
+    #       path: ./services/question-service
+    #       target: /app
+  # --- OPTIONAL: DATABASE ---
+  # db:
+  #   image: mongo:latest            # Or postgres, redis, etc.
+  #   ports:
+  #     - "27017:27017"
+
+  # --- COLLABORATION SERVICE ---
+  collaboration-service:
+    ports:
+      - "3004:3004"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      matching-service:
+        condition: service_started
+    env_file:
+      - ./services/collaboration-service/.env
+    build:
+      context: ./services/collaboration-service
+      dockerfile: Dockerfile.dev
+    tty: true
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - MATCHING_SERVICE_URL=http://matching-service:3003
+      - QUESTION_SERVICE_URL=http://question-service:3002
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+    volumes:
+      - ./services/collaboration-service/src:/usr/src/app/src
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./services/collaboration-service/src
+          target: /usr/src/app/src
+        - action: rebuild
+          path: ./services/collaboration-service/package.json
+
+  # --- CODE EXECUTION SERVICE ---
+  code-execution-service:
+    ports:
+      - "3006:3006"
+    build:
+      context: ./services/code-execution-service
+      dockerfile: Dockerfile.prod
+    env_file:
+      - ./services/code-execution-service/.env
+    environment:
+      - QUESTION_SERVICE_URL=http://question-service:3002
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - question-service
+    restart: on-failure
+  # --- AI SERVICE ---
+  ai-service:
+    ports:
+      - "3005:3005"
+    build:
+      context: ./services/ai-service
+      dockerfile: Dockerfile.dev
+    tty: true
+    env_file:
+      - ./services/ai-service/.env
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    volumes:
+      - ./services/ai-service/src:/usr/src/app/src
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./services/ai-service/src
+          target: /usr/src/app/src
+        - action: rebuild
+          path: ./services/ai-service/package.json
+
+    # --- CHAT SERVICE ---
+  chat-service:
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    build:
+      context: ./services/chat-service
+      dockerfile: Dockerfile.dev
+    container_name: chat-service
+    ports:
+      - "3007:3007"
+    env_file:
+      - ./services/chat-service/.env
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    volumes:
+      - ./services/chat-service/src:/app/src
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./services/chat-service/src
+          target: /app/src
+        - action: rebuild
+          path: ./services/chat-service/package.json
+    restart: unless-stopped
+
+volumes:
+  prometheus_data: {}

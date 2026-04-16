@@ -1,0 +1,40 @@
+# --- Stage 1: Build ---
+FROM node:22-alpine AS builder
+
+WORKDIR /usr/src/app
+
+COPY package*.json ./
+# Install all dependencies so we have the TypeScript compiler (tsc)
+RUN npm install
+
+COPY . .
+
+# 1. Generate Prisma client
+RUN npx prisma generate
+
+# 2. Build the project (This creates the 'dist' folder with .js files)
+RUN npm run build
+
+# --- Stage 2: Runtime ---
+FROM node:22-alpine
+
+WORKDIR /usr/src/app
+
+# Only install production dependencies to keep the image small
+COPY package*.json ./
+RUN npm install --omit=dev
+
+# 3. Copy the COMPILED code, NOT the 'src' folder
+COPY --from=builder /usr/src/app/dist ./dist
+
+# 4. Copy the generated Prisma client
+COPY --from=builder /usr/src/app/node_modules/.prisma ./node_modules/.prisma
+
+# Set environment to production
+ENV NODE_ENV=production
+
+# Match this to your Collab Service port in ECS
+EXPOSE 3004
+
+# 5. Run the compiled javascript from the dist folder
+CMD [ "node", "dist/index.js" ]

@@ -1,0 +1,95 @@
+.pp-searchbar {
+  width: 100%;
+  min-width: 0;
+  height: 50px;
+  box-sizing: border-box;
+
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+
+  padding: 0 1.25rem;
+  border-radius: calc(var(--radius-md));
+  border: 1px solid rgb(var(--searchbar-accent-rgb) / 0.95);
+  background: rgb(var(--searchbar-primary-rgb) / 0.32);
+  box-shadow:
+    0 0 0 1px rgb(var(--searchbar-accent-rgb) / 0.08),
+    0 0 18px rgb(var(--searchbar-accent-rgb) / 0.12);
+}
+
+.pp-searchbar--user {
+  --searchbar-primary-rgb: var(--user-600-rgb);
+  --searchbar-accent-rgb: var(--user-400-rgb);
+  --searchbar-text: var(--user-200);
+  --searchbar-text-muted: rgb(var(--user-200-rgb) / var(--opacity-strong));
+}
+
+.pp-searchbar--admin {
+  --searchbar-primary-rgb: var(--admin-600-rgb);
+  --searchbar-accent-rgb: var(--admin-400-rgb);
+  --searchbar-text: var(--admin-200);
+  --searchbar-text-muted: rgb(var(--admin-200-rgb) / var(--opacity-strong));
+}
+
+.pp-searchbar--neutral {
+  --searchbar-primary-rgb: var(--neutral-700-rgb);
+  --searchbar-accent-rgb: var(--neutral-400-rgb);
+  --searchbar-text: var(--neutral-200);
+  --searchbar-text-muted: rgb(var(--neutral-200-rgb) / var(--opacity-strong));
+}
+
+.pp-searchbar__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--searchbar-text);
+  opacity: 1;
+  flex-shrink: 0;
+}
+
+.pp-searchbar__input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+
+  color: var(--searchbar-text);
+  font-family: var(--font-normal);
+  font-size: 1rem;
+  font-weight: var(--fw-light);
+}
+
+.pp-searchbar__input::placeholder {
+  color: var(--searchbar-text-muted);
+}
+
+.pp-searchbar__clear {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--searchbar-text);
+  opacity: 0.75;
+  cursor: pointer;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+
+  transition:
+    background-color 0.2s ease,
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+.pp-searchbar__clear:hover {
+  opacity: 1;
+  transform: scale(1.04);
+  background: rgb(var(--searchbar-accent-rgb) / 0.12);
+}

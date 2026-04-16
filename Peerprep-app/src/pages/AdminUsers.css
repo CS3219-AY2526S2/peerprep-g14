@@ -1,0 +1,20 @@
+/* Wrapper: fills the full AppShell content area */
+.admin-users-page {
+  display: flex;
+  height: 100%;
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+/* Grid override: No. | Name | Email | Experience */
+.user-table {
+  --qt-grid: 80px minmax(0, 1.5fr) minmax(0, 2fr) 160px;
+}
+
+/* Experience badge (reuses admin accent colour) */
+.question-table__difficulty-pill.is-exp {
+  color: var(--admin-200);
+}
+.question-table__difficulty-pill.is-exp.is-unselected {
+  color: rgb(var(--admin-200-rgb) / var(--opacity-strong));
+}

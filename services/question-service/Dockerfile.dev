@@ -1,0 +1,19 @@
+FROM golang:1.26-alpine
+
+WORKDIR /app
+
+# Install Air
+RUN go install github.com/air-verse/air@latest
+
+ENV GOPROXY=https://proxy.golang.org,direct
+
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Copy source
+COPY . .
+
+EXPOSE 3002
+
+# Air watches for changes and hot-reloads
+CMD ["air", "-c", ".air.toml"]

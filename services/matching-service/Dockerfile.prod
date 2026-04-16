@@ -1,0 +1,45 @@
+# --- Stage 1: Build ---
+FROM node:22-alpine AS builder
+
+WORKDIR /usr/src/app
+
+COPY package*.json ./
+
+# We need all dependencies to run the build (including typescript)
+RUN npm install
+
+COPY . .
+
+# 1. Generate Prisma Client
+RUN npx prisma generate
+
+# 2. Transpile TypeScript to JavaScript (CRITICAL)
+RUN npm run build
+
+# --- Stage 2: Runtime ---
+FROM node:22-alpine
+
+WORKDIR /usr/src/app
+
+# Copy package files
+COPY package*.json ./
+
+# Install production dependencies
+RUN npm install --omit=dev
+
+# 1. Copy the compiled code
+COPY --from=builder /usr/src/app/dist ./dist
+COPY --from=builder /usr/src/app/src ./src
+
+# 2. Copy BOTH Prisma folders (The engine and the generated types)
+COPY --from=builder /usr/src/app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /usr/src/app/node_modules/@prisma/client ./node_modules/@prisma/client
+
+# Set production environment
+ENV NODE_ENV=production
+
+# The port your Matching Service uses (Match this in ECS Task Definition)
+EXPOSE 3003
+
+# 5. Run the compiled JS file, not the .ts file
+CMD [ "node", "dist/index.js" ]

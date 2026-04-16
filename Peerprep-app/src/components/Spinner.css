@@ -1,0 +1,32 @@
+.spinner-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spinner--user {
+  --spinner-light: var(--user-200);
+  --spinner-light-muted: rgb(var(--user-200-rgb) / var(--opacity-strong));
+}
+
+.spinner--admin {
+  --spinner-light: var(--admin-200);
+  --spinner-light-muted: rgb(var(--admin-200-rgb) / var(--opacity-strong));
+}
+
+.spinner--neutral {
+  --spinner-light: var(--neutral-200);
+  --spinner-light-muted: rgb(var(--neutral-200-rgb) / var(--opacity-strong));
+}
+
+.text-light {
+  color: var(--spinner-light);
+}
+
+.text-light-muted {
+  color: var(--spinner-light-muted);
+}
+
+.text-white {
+  color: var(--neutral-200);
+}

@@ -1,0 +1,10 @@
+# Ignore heavy dependency folders
+**/node_modules
+**/dist
+**/.git
+**/.next
+**/build
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db

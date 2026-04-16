@@ -1,0 +1,39 @@
+# --- OS / IDE ---
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# --- Go (Auth Service) ---
+# Ignore the compiled binary
+services/auth-service/auth-service
+# Ignore test profiles
+*.out
+*.test
+
+# --- TypeScript / Frontend (Payment Service & React) ---
+# Ignore dependencies
+node_modules/
+# Ignore compiled JS
+dist/
+build/
+.next/
+# Logs
+npm-debug.log*
+yarn-error.log*
+
+# --- Go (Question Service) ---
+services/question-service/tmp
+
+# --- Environment Secrets ---
+# NEVER commit these
+.env
+.env.*
+!.env.example
+
+# --- Docker ---
+# If you use local data volumes for databases
+/data/
+services/question-service/env
+services/ai-service/env
+services/code-execution-service/env
